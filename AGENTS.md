@@ -10,7 +10,7 @@
 
 ### General Description
 
-- This codebase contains the Laravel application for a warehouse management system (WMS).
+- This codebase contains the Laravel application for a multi-tenant warehouse management system (WMS).
 
 ### Codebase Status
 
@@ -24,6 +24,7 @@
 - **Frontend Library:** React 19 (w/ TypeScript)
 - **Styling & Components:** Tailwind CSS, shadcn/ui
 - **Build Tool:** Vite
+- **Database:** MySQL 8.0 (via Laravel's Query Builder for all database interactions)
 - **Key Packages:** `spatie/laravel-data`
 
 ## Architectural and Coding Style Guidelines
@@ -40,11 +41,20 @@
     - Domain entities must be **immutable** classes extending `Spatie\LaravelData\Data`.
       - Use `readonly` properties.
       - Use `public function with...()` methods returning `new self` for state changes.
+- **Additional choices**
+  - **Tenancy**: Tenancy is handled in repositories by specifying `tenant_id` on where-clauses.
 
 ### Frontend Guidelines (Inertia/React)
+
 - **Guiding Principle:** Follow standard Inertia patterns.  
 - Use Controllers to return `Inertia::render` responses.
 - Do not build a separate REST API unless explicitly instructed.
+- **Tenancy**: Tenancy is handled on the backend and in general does not need to be managed in the frontend code.
+
+### Database Guidelines
+
+- **Tenancy:* All database tables where tenancy is relevant, includes a `tenant_id`-column.
+- **Identifiers:** Unless otherwise specified, an entity's identifier will be stored as an unsigned big integer in a column named `id`.
 
 ## Progressive Disclosure of Further Guidelines Instructions For Specific Types Of Tasks/Sub-tasks
 
