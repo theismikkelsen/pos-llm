@@ -5,5 +5,10 @@
 - Never actually implement the `down`-method in migrations. Instead the method should contain `throw new \Exception('Down-method disabled);`.
 
 ## Obtaining Database Schema
+
 - Use `php artisan information-for-agent:list-database-tables` to get list of tables.
 - Use `php artisan information-for-agent:show-schemas-for-database-tables {tableNamesSeparatedByComma}` to get schemas for one or several tables.
+
+## Codex CLI user interaction
+- If instructions from the user do not include all indices that likely will be required, suggest indexes to add and ask the user to confirm.
+- Always ask the Codex CLI user, before running `php artisan migrate`.
