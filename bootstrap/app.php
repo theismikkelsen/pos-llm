@@ -20,6 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
         \CodeTooling\InformationForAgentShowSchemasForDatabaseTablesCommand::class,
         \CodeTooling\InformationForAgentShowListOfDatabaseTablesCommand::class,
         \CodeTooling\InformationForAgentShowMigrationsThatHaveBeenRunCommand::class,
+        \CodeTooling\InformationForAgentShowListOfClassesCommand::class,
     ])
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->encryptCookies(except: ['appearance', 'sidebar_state']);
