@@ -10,5 +10,5 @@
 - Use `php artisan information-for-agent:show-schemas-for-database-tables {tableNamesSeparatedByComma}` to get schemas for one or several tables.
 
 ## Codex CLI user interaction
-- If instructions from the user do not include all indices that likely will be required, suggest indexes to add and ask the user to confirm.
+- If instructions from the user do not include all indices that likely will be required, suggest indices to add and ask the user to confirm (number the suggestions so the user can easily choose which should be added).
 - Always ask the Codex CLI user, before running `php artisan migrate`.
