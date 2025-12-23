@@ -26,7 +26,7 @@
 - **Styling & Components:** Tailwind CSS, shadcn/ui
 - **Build Tool:** Vite
 - **Database:** MySQL 8.0 (via Laravel's Query Builder for all database interactions)
-- **Key Backend Packages:** `spatie/laravel-data`
+- **Key Backend Packages:** `spatie/laravel-data`, `nesbot/carbon` (`CarbonImmutable` used) 
 
 ## Architectural and Coding Style Guidelines
 
@@ -54,7 +54,7 @@
 - **Tenancy**: Tenancy is handled on the backend and in general does not need to be managed in the frontend code.
 
 #### User Interface Design
-- Use shadcn/ui components as the primary building blocks. Prefer standard Radix UI primitives and Lucide React icons. Keep implementations bare-bones and avoid custom styling or complex UI logic unless the idiomatic shadcn component is insufficient for the task.
+- Use shadcn/ui components as the primary building blocks (<Table>, <Card>, etc). Keep implementations bare-bones and avoid custom styling or complex UI logic unless the idiomatic shadcn component is insufficient for the task.
 
 ### Database Guidelines
 
@@ -65,6 +65,7 @@
 
 - **Running Tests and Static Analysis:** Read `agent_docs/running-tests-and-static-analysis.md`.
 - **Creating/editing Console Commands:** `agent_docs/creating-editing-console-commands.md`
+- **Creating/editing Repository Classes:** `agent_docs/creating-or-editing-repository-classes.md`
 - **Creating Database Migrations:** `agent_docs/creating-database-migrations.md`
 - **Adding new shadcn-components:** `agent_docs/add-new-shadcn-components.md`
 
