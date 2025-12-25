@@ -8,7 +8,7 @@ use Carbon\CarbonImmutable;
 use Inertia\Inertia;
 use Inertia\Response;
 
-final class InventoryItemDefinitionController extends Controller
+final class ProductsController extends Controller
 {
     public function index(InventoryItemDefinitionRepository $repository): Response
     {

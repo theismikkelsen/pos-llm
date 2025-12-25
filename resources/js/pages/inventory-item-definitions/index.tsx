@@ -20,8 +20,8 @@ type InventoryItemDefinition = {
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Item definitions',
-        href: '/inventory-item-definitions',
+        title: 'Products',
+        href: '/products',
     },
 ];
 
@@ -32,15 +32,15 @@ export default function InventoryItemDefinitions({
 }) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Item definitions" />
+            <Head title="Products" />
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
                 <div className="flex items-center justify-between">
-                    <h1 className="text-lg font-semibold">Item definitions</h1>
+                    <h1 className="text-lg font-semibold">Products</h1>
                 </div>
                 <div className="overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
                     {items.length === 0 ? (
                         <div className="px-4 py-6 text-sm text-muted-foreground">
-                            No item definitions yet.
+                            No products yet.
                         </div>
                     ) : (
                         <Table>
