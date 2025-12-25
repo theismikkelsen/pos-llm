@@ -17,6 +17,12 @@
 - The application is in its infancy and is currently unfinished.
 - Some feature implementations are very bare-bones at this point and will be fully fleshed out at a later point in time.
 
+### WMS Terminology and Concepts
+
+- The terminology and concepts of the technical schema vs. UI terminology does not map 1:1.
+- The technical schema uses terminology that can, in a precisely and nuanced way, express the application's operations and data (e.g. inventory item definitions, inventory item instances, etc.). 
+- The UI uses terminology and concepts that matches how users describe the real-world operations of a warehouse (e.g. products, inventory levels, etc.).
+
 ### Tech Stack
 
 - **Language:** PHP 8.4
@@ -58,7 +64,7 @@
 
 ### Database Guidelines
 
-- **Tenancy:* All database tables where tenancy is relevant, includes a `tenant_id`-column.
+- **Tenancy:** All database tables where tenancy is relevant, includes a `tenant_id`-column.
 - **Identifiers:** Unless otherwise specified, an entity's identifier will be stored as an unsigned big integer in a column named `id`.
 
 ## Progressive Disclosure of Further Guidelines Instructions For Specific Types Of Tasks/Sub-tasks
@@ -73,7 +79,6 @@
 
 - `php artisan information-for-agent:list-classes --type=repository`
 - `php artisan information-for-agent:list-classes --type=controller`
-- `php artisan information-for-agent:information-for-agent:list-database-tables`
-- `php artisan information-for-agent:information-for-agent:list-database-tables`
-- `php artisan information-for-agent:show-database-migrations-that-have-been-run`
+- `php artisan information-for-agent:list-database-tables`
 - `php artisan information-for-agent:show-schemas-for-database-tables {tableNamesSeparatedByComma}`
+- `php artisan information-for-agent:show-database-migrations-that-have-been-run`
