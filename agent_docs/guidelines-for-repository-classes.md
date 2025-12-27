@@ -1,3 +1,5 @@
+# Guidelines For Repository Classes
+
 ## Approach
 
 * **Explicit Mapping:** Manually map data in both directions (Database to Domain and Domain to Persistence). Do not use `Spatie\LaravelData\Data` for mapping within a repository.
@@ -66,13 +68,12 @@ class ArticleRepository
     private static function mapToDomain(object $dbRow): Article
     {
         return new Article(
-            uuid: $dbRow->uuid, // @phpstan-ignore property.notFound
+            uuidAndTenant: new UuidAndTenant(uuid: $dbRow->uuid, tenantId: $dbRow->tenant_id), // @phpstan-ignore property.notFound, property.notFound
             authorId: $dbRow->author_id, // @phpstan-ignore property.notFound
             title: $dbRow->title, // @phpstan-ignore property.notFound
             publishedAt: $dbRow->published_at ? CarbonImmutable::createFromFormat('Y-m-d H:i:s', $dbRow->published_at) : NULL // @phpstan-ignore property.notFound
         );
     }
-
 
     /**
      * @return array<string, bool|int|string|CarbonImmutable>
@@ -80,7 +81,8 @@ class ArticleRepository
     private static function mapToPersistence(Article $article): array
     {
         return [
-            'uuid' => $article->uuid,
+            'uuid' => $article->uuidAndTenant->uuid,
+            'tenant_id' => $article->uuidAndTenant->tenantId,
             'author_id' => $article->authorId,
             'title' => $article->title,
             'published_at' => $article->publishedAt?->format('Y-m-d H:i:s'),

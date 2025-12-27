@@ -3,18 +3,18 @@
 ## General Principles For How The Agent Should Behave
 
 - Unless instructed otherwise, assume that the task you have been given has a straightforward, idiomatic solution and does not require a novel solution.
-- In all interactions with the person using the Agent, be extremely concise and sacrifice grammar for the sake of concision.
-- The guidelines in this document and documents in `agent_docs/*` takes precedence over patterns that can be observed in the existing code.
+- In all interactions with the human operator, be extremely concise and sacrifice grammar for the sake of concision.
+- Guidelines from this document and documents in `agent_docs/*` takes precedence over patterns that can be observed in the existing code.
 - When finishing a task, run `php artisan test` and `vendor/bin/phpstan`, to check whether the changes from the task caused errors.
 
-## Further Guidelines That Agent Must Read If Relevant To Current Task
+## Further Guidelines That The Agent Must Read If Relevant To The Current Task
 
-- `agent_docs/running-tests-and-static-analysis.md`.
-- `agent_docs/creating-editing-console-commands.md`
-- `agent_docs/creating-or-editing-repository-classes.md`
-- `agent_docs/creating-database-migrations.md`
-- `agent_docs/add-new-shadcn-components.md`
 - `agent_docs/guidelines-for-tests-and-testcases.md`
+- `agent_docs/guidelines-for-running-tests-and-static-analysis.md`
+- `agent_docs/guidelines-for-console-command-classes.md`
+- `agent_docs/guidelines-for-repository-classes.md`
+- `agent_docs/guidelines-for-database-migrations.md`
+- `agent_docs/guidelines-for-shadcn-components.md`
 - 
 ## About This Codebase
 
@@ -30,7 +30,7 @@
 ### WMS Terminology and Concepts
 
 - The application uses WMS-related terminology heavily. The usage of terminology can be divided into *UI-first terminology* and *backend-first terminology*, which overlaps a lot, but does not map 1:1.
-- UI-first terminolog
+- UI-first terminology
   - Examples: Products, stock, inventory levels, etc.
   - Priorities: Using terms that match how real-world users understand warehouse management and warehouse operations.
   - Used in: User-facing text, user-facing routes, names of controllers that map to user-facing routes, names of Inertia pages that map to user-facing routes, tests of user-facing routes and features, etc.
@@ -38,8 +38,8 @@
   - Examples: Inventory item definitions, inventory item instances, etc.    
   - Priorities: Using nuanced terms that can precisely express the operations and data of the application
   - Used in: Backend code, domain entities, repositories, etc.
-- Example of terminology not mapping 1:1
-  - UI and routes using term *products*. Entities and repositories using term *inventory item definition*. The controller is named using term *products*, but orchestrates usage of entities and repositories using term *inventory item definition*.
+- Example of using both UI-first terminology and backend-first terminology correctly when implementing a feature
+  - Using the term *products* in user-facing text in the frontend. Using */products* as URI for the route. Naming the test *ProductsTest.php*. Naming the entity *InventoryItemDefinition* and the repository *InventoryItemDefinitionRepository*. Naming the controller *ProductController* and in the controller orchestrating usage of *InventoryItemDefinition* and *InventoryItemDefinitionRepository*. 
 
 ### Tech Stack
 
@@ -50,7 +50,6 @@
 - **Styling & Components:** Tailwind CSS, shadcn/ui
 - **Build Tool:** Vite
 - **Database:** MySQL 8.0 (via Laravel's Query Builder for all database interactions)
-- **Key Backend Packages:** `spatie/laravel-data`, `nesbot/carbon` (`CarbonImmutable` used) 
 
 ## Architectural and Coding Style Guidelines
 
@@ -62,12 +61,12 @@
   - **Repositories And Non-Eloquent Domain Entities Used Instead Of Eloquent:** 
     - All database interaction for domain entities must happen inside Repository classes. 
       - Parameters and returns should be domain entities or Collections of domain entities.
-      - Leverage `spatie/laravel-data` attributes (e.g., `#[MapInputName]`, `#[WithCast]`) to automatically map `DB::table` results to Data objects.
     - Domain entities must be **immutable** classes extending `Spatie\LaravelData\Data`.
       - Use `readonly` properties.
       - Use `public function with...()` methods returning `new self` for state changes.
 - **Additional choices**
   - **Tenancy**: Tenancy is handled in repositories by specifying `tenant_id` on where-clauses.
+- **Key Backend Packages:** `spatie/laravel-data`, `nesbot/carbon` (`CarbonImmutable` used) 
 
 ### Frontend Guidelines (Inertia/React)
 
