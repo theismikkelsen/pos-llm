@@ -8,7 +8,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import { Head } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
 
 type InventoryItemDefinition = {
     id: number;
@@ -70,7 +70,12 @@ export default function InventoryItemDefinitions({
                                             {item.skuId}
                                         </TableCell>
                                         <TableCell className="px-4 py-2">
-                                            {item.name}
+                                            <Link
+                                                href={`/products/${item.id}`}
+                                                className="text-primary underline-offset-4 hover:underline"
+                                            >
+                                                {item.name}
+                                            </Link>
                                         </TableCell>
                                         <TableCell className="px-4 py-2">
                                             {item.isLotTracked ? 'Yes' : 'No'}
