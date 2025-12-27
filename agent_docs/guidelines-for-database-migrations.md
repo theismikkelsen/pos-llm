@@ -4,6 +4,7 @@
 - Both names of tables and columns should be snake_case. Names of tables should be plural.
 - Never actually implement the `down`-method in migrations. Instead the method should contain `throw new \Exception('Down-method disabled);`.
 - Never make changes to migrations that have already been run.
+- When creating new migrations, use command `php artisan make:migration ...`.
 - When possible, default to making choices that optimize for performant database operations.
   - Prefer unsigned big integers for ids.
   - Prefer lower character limits and smaller collations (e.g. using varchar(25) ascii_bin) for status-columns and stuff like that.
