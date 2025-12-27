@@ -15,7 +15,7 @@ class UpdateWithMethodOnClassesCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'code-tooling:update-with-method-on-classes';
+    protected $signature = 'code-tooling:update-withargs-method-on-classes';
 
     /**
      * The console command description.
@@ -68,7 +68,7 @@ class UpdateWithMethodOnClassesCommand extends Command
         }
 
         $confirmMessage = <<<MESSAGE
-        Do you want to proceed with updating with-method on classes?
+        Do you want to proceed with updating withArgs-method on classes?
 
         ## Old method
         $oldMethod
@@ -81,7 +81,7 @@ class UpdateWithMethodOnClassesCommand extends Command
 
         if ($this->confirm($confirmMessage)) {
             file_put_contents($file, str_replace($oldMethod, $newMethod, $fileContents));
-            $this->info('Successfully updated with-method in TestClass.php');
+            $this->info('Successfully updated withArgs-method in TestClass.php');
         } else {
             $this->info('Operation cancelled - no changes were made');
         }
@@ -200,7 +200,7 @@ class UpdateWithMethodOnClassesCommand extends Command
 
         $stringWithMethods = <<<METHOD
             {$phpDocForWithMethodLines->implode("\n    ")}
-            public function with({$constructorParametersForWithMethodLines->implode(", ")}): self
+            public function withArgs({$constructorParametersForWithMethodLines->implode(", ")}): self
             {
                 return new self({$argumentForNewSelfInWithMethodLines->implode(", ")});
             }
@@ -215,7 +215,7 @@ class UpdateWithMethodOnClassesCommand extends Command
         if (
             $candidateLinesForMethod = $constructorParametersForWithMethodLines = Str::of($fileContents)
                 ->explode("\n")
-                ->doesntContain(fn(string $line) => str_starts_with($line, "    public function with(")
+                ->doesntContain(fn(string $line) => str_starts_with($line, "    public function withArgs(")
                 )
         ) {
             return NULL;
@@ -223,12 +223,12 @@ class UpdateWithMethodOnClassesCommand extends Command
 
         $candidateLinesForMethod = $constructorParametersForWithMethodLines = Str::of($fileContents)
             ->explode("\n")
-            ->skipWhile(fn(string $line) => str_starts_with($line, "    public function with(")===FALSE)
+            ->skipWhile(fn(string $line) => str_starts_with($line, "    public function withArgs(")===FALSE)
             ->slice(NULL, 4)
             ->values();
 
         // Verify all line
-        if (Str::of( $candidateLinesForMethod[0])->startsWith('    public function with(')===FALSE) {
+        if (Str::of( $candidateLinesForMethod[0])->startsWith('    public function withArgs(')===FALSE) {
             throw new \Exception();
         }
         if (Str::of( $candidateLinesForMethod[1])->startsWith('    {')===FALSE) {
@@ -248,7 +248,7 @@ class UpdateWithMethodOnClassesCommand extends Command
             ->explode("\n")
             ->reverse()
             ->values()
-            ->skipWhile(fn(string $line) => str_starts_with($line, '    public function with(')===FALSE)
+            ->skipWhile(fn(string $line) => str_starts_with($line, '    public function withArgs(')===FALSE)
             ->values()
             ->pipe(function (Collection $lines) {
                 if (str_starts_with($lines[1], '    */')===FALSE) {
