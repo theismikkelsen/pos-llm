@@ -10,7 +10,9 @@ test('authenticated users can visit the inventory item definitions page', functi
     $this->actingAs(User::factory()->create());
 
     // Act
-    $response = $this->get(route('products.index'));
+    $response = $this
+        ->withoutExceptionHandling()
+        ->get(route('products.index'));
 
     // Assert
     $response->assertOk();
@@ -27,7 +29,9 @@ test('authenticated users can visit an individual product page', function () {
     );
 
     // Act
-    $response = $this->get("/products/$itemId");
+    $response = $this
+        ->withoutExceptionHandling()
+        ->get("/products/$itemId");
 
     // Assert
     $response

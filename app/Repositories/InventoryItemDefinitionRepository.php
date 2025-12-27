@@ -2,6 +2,7 @@
 
 namespace App\Repositories;
 
+use App\Domain\Inventory\IdAndTenant;
 use App\Domain\Inventory\InventoryItemDefinition;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
@@ -45,8 +46,7 @@ final class InventoryItemDefinitionRepository
     private static function mapToDomain(object $dbRow): InventoryItemDefinition
     {
         return new InventoryItemDefinition(
-            id: $dbRow->id, // @phpstan-ignore property.notFound
-            tenantId: $dbRow->tenant_id, // @phpstan-ignore property.notFound
+            idAndTenant: new IdAndTenant(id: $dbRow->id, tenantId: $dbRow->tenant_id), // @phpstan-ignore property.notFound, property.notFound
             skuId: $dbRow->sku_id, // @phpstan-ignore property.notFound
             name: $dbRow->name, // @phpstan-ignore property.notFound
             isLotTracked: (bool) $dbRow->is_lot_tracked, // @phpstan-ignore property.notFound
@@ -61,7 +61,7 @@ final class InventoryItemDefinitionRepository
     private static function mapToPersistence(InventoryItemDefinition $definition): array
     {
         return [
-            'tenant_id' => $definition->tenantId,
+            'tenant_id' => $definition->idAndTenant->tenantId,
             'sku_id' => $definition->skuId,
             'name' => $definition->name,
             'is_lot_tracked' => $definition->isLotTracked,

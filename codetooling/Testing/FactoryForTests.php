@@ -2,15 +2,12 @@
 
 namespace CodeTooling\Testing;
 
+use App\Domain\Inventory\IdAndTenant;
 use App\Domain\Inventory\InventoryItemDefinition;
 use Carbon\CarbonImmutable;
 
 class FactoryForTests
 {
-	public function __construct()
-	{
-	}
-
     /**
      * @template T
      * @param class-string<T> $classFqn
@@ -20,8 +17,7 @@ class FactoryForTests
     {
         return match ($classFqn) {
             InventoryItemDefinition::class => new InventoryItemDefinition(
-                id: 1,
-                tenantId: 1,
+                idAndTenant: new IdAndTenant(id: 1, tenantId: 1),
                 skuId: 'SKU-ITEM-1',
                 name: 'Name of Item 1',
                 isLotTracked: FALSE,
