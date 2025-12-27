@@ -1,11 +1,21 @@
 # AGENTS.md
 
-## General Principles For How Codex CLI Should Behave
+## General Principles For How The Agent Should Behave
 
 - Unless instructed otherwise, assume that the task you have been given has a straightforward, idiomatic solution and does not require a novel solution.
-- In all interactions with the person using Codex CLI, be extremely concise and sacrifice grammar for the sake of concision.
-- When finishing a task, run `php artisan test` and `vendor/bin/phpstan analyse app`, to check whether the changes from the task caused errors.
+- In all interactions with the person using the Agent, be extremely concise and sacrifice grammar for the sake of concision.
+- The guidelines in this document and documents in `agent_docs/*` takes precedence over patterns that can be observed in the existing code.
+- When finishing a task, run `php artisan test` and `vendor/bin/phpstan`, to check whether the changes from the task caused errors.
 
+## Further Guidelines That Agent Must Read If Relevant To Current Task
+
+- `agent_docs/running-tests-and-static-analysis.md`.
+- `agent_docs/creating-editing-console-commands.md`
+- `agent_docs/creating-or-editing-repository-classes.md`
+- `agent_docs/creating-database-migrations.md`
+- `agent_docs/add-new-shadcn-components.md`
+- `agent_docs/guidelines-for-tests-and-testcases.md`
+- 
 ## About This Codebase
 
 ### General Description
@@ -20,10 +30,12 @@
 ### WMS Terminology and Concepts
 
 - The application uses WMS-related terminology heavily. The usage of terminology can be divided into *UI-first terminology* and *backend-first terminology*, which overlaps a lot, but does not map 1:1.
-- UI-first terminology
+- UI-first terminolog
+  - Examples: Products, stock, inventory levels, etc.
   - Priorities: Using terms that match how real-world users understand warehouse management and warehouse operations.
-  - Used in: User-facing text, user-facing routes, names of controllers that maps to user-facing routes, tests of user-facing features, etc.
+  - Used in: User-facing text, user-facing routes, names of controllers that map to user-facing routes, names of Inertia pages that map to user-facing routes, tests of user-facing routes and features, etc.
 - Backend-first terminology
+  - Examples: Inventory item definitions, inventory item instances, etc.    
   - Priorities: Using nuanced terms that can precisely express the operations and data of the application
   - Used in: Backend code, domain entities, repositories, etc.
 - Example of terminology not mapping 1:1
@@ -74,15 +86,12 @@
 - **Tenancy:** All database tables where tenancy is relevant, includes a `tenant_id`-column.
 - **Identifiers:** Unless otherwise specified, an entity's identifier will be stored as an unsigned big integer in a column named `id`.
 
-## Progressive Disclosure of Further Guidelines Instructions For Specific Types Of Tasks/Sub-tasks
+### Tests Guidelines
 
-- **Running Tests and Static Analysis:** Read `agent_docs/running-tests-and-static-analysis.md`.
-- **Creating/editing Console Commands:** `agent_docs/creating-editing-console-commands.md`
-- **Creating/editing Repository Classes:** `agent_docs/creating-or-editing-repository-classes.md`
-- **Creating Database Migrations:** `agent_docs/creating-database-migrations.md`
-- **Adding new shadcn-components:** `agent_docs/add-new-shadcn-components.md`
+- Laravel is used for all automated testing.
+- When writing tests, use `\CodeTooling\FactoryForTests` for making domain entities, instead of creating them manually in each test. Use the object with default-data from the factory without changing the default data if at all possible. Only change data using the entity's `withArgs`-method to change data on the entity if strictly necessary.
 
-## Commands That Can Be Used For Exploring Codebase
+## Commands That Agent Can Use To Explore Codebase
 
 - `php artisan information-for-agent:list-classes --type=repository`
 - `php artisan information-for-agent:list-classes --type=controller`
