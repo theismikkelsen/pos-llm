@@ -3,6 +3,7 @@
 namespace CodeTooling\Testing;
 
 use App\Domain\Inventory\IdAndTenant;
+use App\Domain\Inventory\InventoryMovement;
 use App\Domain\Inventory\InventoryItemDefinition;
 use Carbon\CarbonImmutable;
 
@@ -23,6 +24,14 @@ class FactoryForTests
                 isLotTracked: FALSE,
                 isSerialTracked: FALSE,
                 createdAt: CarbonImmutable::now(),
+            ),
+            InventoryMovement::class => new InventoryMovement(
+                idAndTenant: new IdAndTenant(id: NULL, tenantId: 1),
+                inventoryItemInstanceId: 1,
+                inventoryLocationIdFrom: 10,
+                inventoryLocationIdTo: 20,
+                quantityAdjustment: 5,
+                timeCreated: CarbonImmutable::now(),
             ),
             default => throw new \InvalidArgumentException("Class {$classFqn} not supported"),
         };
