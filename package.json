@@ -5,7 +5,7 @@
     "scripts": {
         "build": "vite build",
         "build:ssr": "vite build && vite build --ssr",
-        "dev": "vite",
+        "dev": "npx concurrently -c \"#22c55e,#60a5fa\" \"vite\" \"node scripts/typescript-transformer-watch.mjs\" --names=vite,types",
         "format": "prettier --write resources/",
         "format:check": "prettier --check resources/",
         "lint": "eslint . --fix",

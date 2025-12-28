@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Data\Products\ProductData;
 use App\Domain\Inventory\InventoryItemDefinition;
 use App\Repositories\InventoryItemDefinitionRepository;
 use Inertia\Inertia;
@@ -16,7 +17,7 @@ final class ProductsController extends Controller
 
         return Inertia::render('inventory-item-definitions/index', [
             'items' => $items
-                ->map(static fn (InventoryItemDefinition $item) => $item->toArray())
+                ->map(static fn (InventoryItemDefinition $item) => ProductData::fromInventoryItemDefinition($item)->toArray())
                 ->values(),
         ]);
     }
@@ -26,10 +27,8 @@ final class ProductsController extends Controller
         $tenantId = 1;
         $item = $inventoryItemDefinitionRepository->getById($tenantId, $id);
 
-
-
         return Inertia::render('inventory-item-definitions/show', [
-            'item' => $item->toArray(),
+            'item' => ProductData::fromInventoryItemDefinition($item)->toArray(),
         ]);
     }
 }

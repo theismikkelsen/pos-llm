@@ -1,5 +1,6 @@
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
+import type { ProductData } from '@/types/generated';
 import {
     Card,
     CardContent,
@@ -8,18 +9,10 @@ import {
 } from '@/components/ui/card';
 import { Head } from '@inertiajs/react';
 
-type InventoryItemDefinition = {
-    id: number;
-    skuId: string;
-    name: string;
-    isLotTracked: boolean;
-    isSerialTracked: boolean;
-};
-
 export default function InventoryItemDefinitionShow({
     item,
 }: {
-    item: InventoryItemDefinition;
+    item: ProductData;
 }) {
     const breadcrumbs: BreadcrumbItem[] = [
         {
