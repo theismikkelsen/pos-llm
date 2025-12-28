@@ -10,8 +10,6 @@
   - Prefer lower character limits and smaller collations (e.g. using varchar(25) ascii_bin) for status-columns and stuff like that.
   - Prefer booleans for boolean values.
 
-varchar(25)	ascii_bin
-
 ## Obtaining Database Schema
 
 - Use `php artisan information-for-agent:list-database-tables` to get list of tables.

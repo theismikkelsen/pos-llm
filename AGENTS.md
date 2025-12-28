@@ -2,16 +2,14 @@
 
 ## General Principles For How The Agent Should Behave
 
-- Unless instructed otherwise, assume that the task you have been given has a straightforward, idiomatic solution and does not require a novel solution.
-- In all interactions with the human operator, be extremely concise and sacrifice grammar for the sake of concision.
 - Guidelines from this document and documents in `agent_docs/*` takes precedence over patterns that can be observed in the existing code.
-- When finishing a task, run `php artisan test` and `vendor/bin/phpstan`, to check whether the changes from the task caused errors.
 
 ## Further Guidelines That The Agent Must Read If Relevant To The Current Task
 
 - `agent_docs/guidelines-for-tests-and-testcases.md`
 - `agent_docs/guidelines-for-running-tests-and-static-analysis.md`
 - `agent_docs/guidelines-for-console-command-classes.md`
+- `agent_docs/guidelines-for-interactions-with-database-or-orm.md`
 - `agent_docs/guidelines-for-repository-classes.md`
 - `agent_docs/guidelines-for-database-migrations.md`
 - `agent_docs/guidelines-for-shadcn-components.md`
@@ -58,7 +56,6 @@
 
 - **Guiding Principle**: Backend-code should follow Spatie-like coding style (clean, readable code, strict types, and modern PHP 8.4 features, etc.).
 - **Deliberate Non-idiomatic Choices**
-  - **No usage of Eloquent besides the `User` model**: The default `User` model is Eloquent for authentication compatibility.
   - **Repositories And Non-Eloquent Domain Entities Used Instead Of Eloquent:** 
     - All database interaction for domain entities must happen inside Repository classes. 
       - Parameters and returns should be domain entities or Collections of domain entities.
@@ -67,7 +64,8 @@
       - Use `public function with...()` methods returning `new self` for state changes.
 - **Additional choices**
   - **Tenancy**: Tenancy is handled in repositories by specifying `tenant_id` on where-clauses.
-- **Key Backend Packages:** `spatie/laravel-data`, `nesbot/carbon` (`CarbonImmutable` used) 
+- **Key Backend Packages:** `spatie/laravel-data`, `nesbot/carbon` (`CarbonImmutable` used)
+- Avoid using array shapes 
 
 ### Frontend Guidelines (Inertia/React)
 

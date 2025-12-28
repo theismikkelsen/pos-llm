@@ -5,9 +5,15 @@
 - Data Specificity
   - **Define what you assert; default the rest.** If a value is used in an assertion (e.g., assertSee('Item A')), it must be explicitly defined in the setup. Never assert against hidden factory defaults.
   - **Reduce Noise.** Do not manually define attributes irrelevant to the test scenario. Let the Factory handle valid defaults for all non-essential data to keep the test readable and focused.
-- Test for this application are divided into two categories:
+- Test for this application are divided into three categories:
   - Feature tests (`tests/Feature`): Feature tests may test a larger portion of the code, including how several objects interact with each other or even a full HTTP request to a JSON endpoint. Generally, most of the tests should be feature tests. These types of tests provide the most confidence that the system as a whole is functioning as intended.
+  - Integration tests (`tests/Integration`)
   - Unit tests (`tests/Unit`): Unit tests are tests that focus on a very small, isolated portion of your code (typically a single class). Tests within the "Unit" test directory do not boot the Laravel application and therefore are unable to access the application's database or other framework services.
+
+## Interaction With Database In Tests
+
+- Perform database setup and assertions through the same dedicated classes for database interactions (e.g. `Repository` or `Ledger` classes) that the application uses, rather than direct database access.
+- Implement missing methods in these classes when required for testing, following existing naming and architectural patterns for this type of classes.
 
 ## Feature tests
 
