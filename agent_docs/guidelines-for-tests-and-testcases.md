@@ -12,8 +12,12 @@
 
 ## Interaction With Database In Tests
 
-- Perform database setup and assertions through the same dedicated classes for database interactions (e.g. `Repository` or `Ledger` classes) that the application uses, rather than direct database access.
-- Implement missing methods in these classes when required for testing, following existing naming and architectural patterns for this type of classes.
+- Perform database setup and assertions through the same dedicated classes for database interactions (e.g. `Repository` or `Ledger` classes) that the application uses, rather than direct database access. Implement missing methods in these classes when required for testing, following existing naming and architectural patterns for this type of classes.
+- In tests, unlike in the application code, it allowed to hardcode ids of objects added through repositories in the test-setup, instead of letting the database auto-increment the id, as this increases the readability of the test.
+
+## Testing Tenant Isolation
+
+- Do not test tenant isolation in every testcase. Instead, add create a dedicated testcase (or testcases if required) to test tenant isolation. Place these testcases at the bottom of the test-file.  
 
 ## Feature tests
 

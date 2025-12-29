@@ -3,6 +3,7 @@
 ## General Principles For How The Agent Should Behave
 
 - Guidelines from this document and documents in `agent_docs/*` takes precedence over patterns that can be observed in the existing code.
+- Use the commands `php artisan test` and `vendor\bin\phpstan`, both during and at the end of tasks involving changes to the codebase, to check whether your changes caused unforeseen errors.
 
 ## Further Guidelines That The Agent Must Read If Relevant To The Current Task
 
@@ -64,8 +65,9 @@
       - Use `public function with...()` methods returning `new self` for state changes.
 - **Additional choices**
   - **Tenancy**: Tenancy is handled in repositories by specifying `tenant_id` on where-clauses.
+  - **Fail Fast:** For internal application logic, throw exceptions immediately upon encountering unexpected missing or invalid data, rather than attempting to accommodate or handle it gracefully.
 - **Key Backend Packages:** `spatie/laravel-data`, `nesbot/carbon` (`CarbonImmutable` used)
-- Avoid using array shapes 
+- Avoid using array shapes.
 
 ### Frontend Guidelines (Inertia/React)
 
