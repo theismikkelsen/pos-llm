@@ -1,0 +1,100 @@
+<?php declare(strict_types=1);
+
+namespace CodeTooling\Testing;
+
+use App\Domain\Inventory\IdAndTenant;
+use App\Domain\Inventory\InventoryItemDefinition;
+use App\Domain\Inventory\InventoryItemInstance;
+use App\Domain\Inventory\InventoryLocation;
+use App\Repositories\InventoryItemDefinitionRepository;
+use App\Repositories\InventoryItemInstanceRepository;
+use App\Repositories\InventoryLocationRepository;
+use CodeTooling\Testing\FactoryForTests;
+
+class BasicTestSetupDataSeeder
+{
+    private InventoryLocationRepository $locationRepository;
+    private InventoryItemDefinitionRepository $definitionRepository;
+    private InventoryItemInstanceRepository $instanceRepository;
+
+    private function __construct(
+        private readonly int $tenantId
+    ) {
+        // Resolve repositories once to keep the seeding loop clean
+        $this->locationRepository = resolve(InventoryLocationRepository::class);
+        $this->definitionRepository = resolve(InventoryItemDefinitionRepository::class);
+        $this->instanceRepository = resolve(InventoryItemInstanceRepository::class);
+    }
+
+    /**
+     * Entry point for the fluent seeder. Sets the tenant context for all subsequent data.
+     */
+    public static function forTenant(int $id): self
+    {
+        return new self($id);
+    }
+
+    /**
+     * Seeds Inventory Locations with specific, hardcoded IDs.
+     *
+     * @param int[] $ids List of specific IDs to assign to the locations.
+     */
+    public function seedLocations(array $ids): self
+    {
+        foreach ($ids as $id) {
+            $this->locationRepository->add(
+                FactoryForTests::create(InventoryLocation::class)->withArgs(
+                    idAndTenant: new IdAndTenant(id: $id, tenantId: $this->tenantId),
+                )
+            );
+        }
+
+        return $this;
+    }
+
+    /**
+     * Seeds Inventory Item Definitions with specific, hardcoded IDs.
+     *
+     * @param int[] $ids List of specific IDs to assign to the definitions.
+     */
+    public function seedInventoryItemDefinitions(array $ids): self
+    {
+        foreach ($ids as $id) {
+            $this->definitionRepository->add(
+                FactoryForTests::create(InventoryItemDefinition::class)->withArgs(
+                    idAndTenant: new IdAndTenant(id: $id, tenantId: $this->tenantId),
+                    skuId: "SKU-ITEM-{$id}",
+                )
+            );
+        }
+
+        return $this;
+    }
+
+    /**
+     * Seeds Inventory Item Instances where the Instance ID matches the Definition ID.
+     *
+     * Example: Passing [1] will create an Instance with ID 1, linked to Definition ID 1.
+     * Note: This assumes Definition ID 1 already exists.
+     *
+     * @param int[] $ids List of IDs to use for both the Instance and the Parent Definition.
+     */
+    public function seedInventoryItemInstancesWithIdsThatMirrorTheIdOfTheirParentInventoryItemDefinition(array $ids): self
+    {
+        foreach ($ids as $id) {
+            // VERIFICATION STEP:
+            // Ensure the parent definition actually exists before trying to link an instance to it.
+            // This prevents "ghost" data in tests where an instance points to a non-existent definition.
+            $parentDefinition = $this->definitionRepository->getById(tenantId: $this->tenantId, id: $id);
+
+            $this->instanceRepository->add(
+                FactoryForTests::create(InventoryItemInstance::class)->withArgs(
+                    idAndTenant: new IdAndTenant(id: $id, tenantId: $this->tenantId),
+                    inventoryItemDefinitionId: $id, // Mirroring the ID
+                )
+            );
+        }
+
+        return $this;
+    }
+}

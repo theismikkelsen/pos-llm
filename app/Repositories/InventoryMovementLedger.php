@@ -11,8 +11,29 @@ use Illuminate\Support\Facades\DB;
 
 class InventoryMovementLedger
 {
+    public function __construct(
+        private readonly InventoryItemInstanceRepository $inventoryItemInstanceRepository,
+        private readonly InventoryLocationRepository $inventoryLocationRepository,
+    ) {
+    }
+
     public function add(InventoryMovement $movement): int
     {
+        $this->inventoryItemInstanceRepository->getById(
+            tenantId: $movement->idAndTenant->tenantId,
+            id: $movement->inventoryItemInstanceId,
+        );
+
+        $this->inventoryLocationRepository->getById(
+            tenantId: $movement->idAndTenant->tenantId,
+            id: $movement->inventoryLocationIdFrom,
+        );
+
+        $this->inventoryLocationRepository->getById(
+            tenantId: $movement->idAndTenant->tenantId,
+            id: $movement->inventoryLocationIdTo,
+        );
+
         return DB::transaction(function () use ($movement): int {
             $id = DB::table('inventory_transactions')->insertGetId(
                 self::mapToPersistence($movement),
@@ -171,6 +192,7 @@ class InventoryMovementLedger
     private static function mapToPersistence(InventoryMovement $movement): array
     {
         return [
+            'id' => $movement->idAndTenant->id,
             'tenant_id' => $movement->idAndTenant->tenantId,
             'inventory_item_instance_id' => $movement->inventoryItemInstanceId,
             'inventory_location_id_from' => $movement->inventoryLocationIdFrom,

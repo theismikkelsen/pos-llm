@@ -14,8 +14,8 @@ class InventoryLevelForLocation extends Data
     }
 
 
-    public function withArgs(\CodeTooling\OmittedArg|int $inventoryLocationId = new \CodeTooling\OmittedArg, \CodeTooling\OmittedArg|int $quantity = new \CodeTooling\OmittedArg): self
+    public function withArgs(\CodeTooling\OmittedArg|int $inventoryItemInstanceId = new \CodeTooling\OmittedArg, \CodeTooling\OmittedArg|int $inventoryLocationId = new \CodeTooling\OmittedArg, \CodeTooling\OmittedArg|int $quantity = new \CodeTooling\OmittedArg): self
     {
-        return new self(inventoryLocationId: $inventoryLocationId instanceof \CodeTooling\OmittedArg ? $this->inventoryLocationId : $inventoryLocationId, quantity: $quantity instanceof \CodeTooling\OmittedArg ? $this->quantity : $quantity);
+        return new self(inventoryItemInstanceId: $inventoryItemInstanceId instanceof \CodeTooling\OmittedArg ? $this->inventoryItemInstanceId : $inventoryItemInstanceId, inventoryLocationId: $inventoryLocationId instanceof \CodeTooling\OmittedArg ? $this->inventoryLocationId : $inventoryLocationId, quantity: $quantity instanceof \CodeTooling\OmittedArg ? $this->quantity : $quantity);
     }
 }

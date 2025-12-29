@@ -3,8 +3,10 @@
 namespace CodeTooling\Testing;
 
 use App\Domain\Inventory\IdAndTenant;
+use App\Domain\Inventory\InventoryItemInstance;
 use App\Domain\Inventory\InventoryMovement;
 use App\Domain\Inventory\InventoryItemDefinition;
+use App\Domain\Inventory\InventoryLocation;
 use Carbon\CarbonImmutable;
 
 class FactoryForTests
@@ -32,6 +34,18 @@ class FactoryForTests
                 inventoryLocationIdTo: 20,
                 quantityAdjustment: 5,
                 timeCreated: CarbonImmutable::now(),
+            ),
+            InventoryItemInstance::class => new InventoryItemInstance(
+                idAndTenant: new IdAndTenant(id: 1, tenantId: 1),
+                inventoryItemDefinitionId: 1,
+                lotNumber: 'LOT-1',
+                serialNumber: 'SER-1',
+            ),
+            InventoryLocation::class => new InventoryLocation(
+                idAndTenant: new IdAndTenant(id: 1, tenantId: 1),
+                heldInventoryIsAvailable: TRUE,
+                referenceTypeId: 1,
+                referenceId: 1,
             ),
             default => throw new \InvalidArgumentException("Class {$classFqn} not supported"),
         };

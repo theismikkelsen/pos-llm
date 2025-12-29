@@ -15,8 +15,16 @@ class InventoryMovement extends Data
         public readonly int $quantityAdjustment,
         public readonly CarbonImmutable $timeCreated,
     ) {
+        if ($inventoryLocationIdFrom === $inventoryLocationIdTo) {
+            throw new \InvalidArgumentException('Source and destination locations must be different');
+        }
+        if ($quantityAdjustment === 0) {
+            throw new \InvalidArgumentException('Quantity adjustment cannot be zero');
+        }
+        if ($quantityAdjustment < 0) {
+            throw new \InvalidArgumentException('Quantity adjustment must be positive');
+        }
     }
-
 
     public function withArgs(\CodeTooling\OmittedArg|IdAndTenant $idAndTenant = new \CodeTooling\OmittedArg, \CodeTooling\OmittedArg|int $inventoryItemInstanceId = new \CodeTooling\OmittedArg, \CodeTooling\OmittedArg|int $inventoryLocationIdFrom = new \CodeTooling\OmittedArg, \CodeTooling\OmittedArg|int $inventoryLocationIdTo = new \CodeTooling\OmittedArg, \CodeTooling\OmittedArg|int $quantityAdjustment = new \CodeTooling\OmittedArg, \CodeTooling\OmittedArg|CarbonImmutable $timeCreated = new \CodeTooling\OmittedArg): self
     {
