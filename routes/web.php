@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\LocationController;
 use App\Http\Controllers\ProductsController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -21,6 +22,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', function () {
         return Inertia::render('dashboard');
     })->name('dashboard');
+
+    Route::get('locations', [LocationController::class, 'index'])->name('locations.index');
+    Route::get('locations/create', [LocationController::class, 'create'])->name('locations.create');
+    Route::post('locations', [LocationController::class, 'store'])->name('locations.store');
 
     Route::get('products', [ProductsController::class, 'index'])->name('products.index');
     Route::get('products/{id}', [ProductsController::class, 'show'])->whereNumber('id')->name('products.show');

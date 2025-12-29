@@ -6,6 +6,7 @@ use App\Domain\Inventory\IdAndTenant;
 use App\Domain\Inventory\InventoryItemDefinition;
 use App\Domain\Inventory\InventoryItemInstance;
 use App\Domain\Inventory\InventoryLocation;
+use App\Domain\Inventory\InventoryLocationReferenceType;
 use App\Repositories\InventoryItemDefinitionRepository;
 use App\Repositories\InventoryItemInstanceRepository;
 use App\Repositories\InventoryLocationRepository;
@@ -45,6 +46,8 @@ class BasicTestSetupDataSeeder
             $this->locationRepository->add(
                 FactoryForTests::create(InventoryLocation::class)->withArgs(
                     idAndTenant: new IdAndTenant(id: $id, tenantId: $this->tenantId),
+                    referenceTypeId: InventoryLocationReferenceType::WAREHOUSE_LOCATION,
+                    referenceId: (string) $id,
                 )
             );
         }

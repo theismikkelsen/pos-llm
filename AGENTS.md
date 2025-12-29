@@ -15,6 +15,7 @@
 - `agent_docs/guidelines-for-database-migrations.md`
 - `agent_docs/guidelines-for-shadcn-components.md`
 - `agent_docs/guidelines-for-routes-and-controller-classes.md`
+- `agent_docs/guidelines-for-writing-draft-agent-task-document.md`
 
 ## About This Codebase
 
