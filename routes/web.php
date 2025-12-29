@@ -22,11 +22,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return Inertia::render('dashboard');
     })->name('dashboard');
 
-    Route::get('products', [ProductsController::class, 'index'])
-        ->name('products.index');
-    Route::get('products/{id}', [ProductsController::class, 'show'])
-        ->name('products.show')
-        ->whereNumber('id');
+    Route::get('products', [ProductsController::class, 'index'])->name('products.index');
+    Route::get('products/{id}', [ProductsController::class, 'show'])->whereNumber('id')->name('products.show');
 });
 
 require __DIR__.'/settings.php';
