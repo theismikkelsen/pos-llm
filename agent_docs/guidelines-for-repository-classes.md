@@ -68,7 +68,7 @@ class ArticleRepository
     private static function mapToDomain(object $dbRow): Article
     {
         return new Article(
-            uuidAndTenant: new UuidAndTenant(uuid: $dbRow->uuid, tenantId: $dbRow->tenant_id), // @phpstan-ignore property.notFound, property.notFound
+            idAndTenant: new IdAndTenant(id: $dbRow->id, tenantId: $dbRow->tenant_id), // @phpstan-ignore property.notFound, property.notFound
             authorId: $dbRow->author_id, // @phpstan-ignore property.notFound
             title: $dbRow->title, // @phpstan-ignore property.notFound
             publishedAt: $dbRow->published_at ? CarbonImmutable::createFromFormat('Y-m-d H:i:s', $dbRow->published_at) : NULL // @phpstan-ignore property.notFound
@@ -81,8 +81,8 @@ class ArticleRepository
     private static function mapToPersistence(Article $article): array
     {
         return [
-            'uuid' => $article->uuidAndTenant->uuid,
-            'tenant_id' => $article->uuidAndTenant->tenantId,
+            'id' => $article->idAndTenant->id,
+            'tenant_id' => $article->idAndTenant->tenantId,
             'author_id' => $article->authorId,
             'title' => $article->title,
             'published_at' => $article->publishedAt?->format('Y-m-d H:i:s'),

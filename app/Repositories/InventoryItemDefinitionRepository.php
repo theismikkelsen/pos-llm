@@ -61,6 +61,7 @@ final class InventoryItemDefinitionRepository
     private static function mapToPersistence(InventoryItemDefinition $definition): array
     {
         return [
+            'id' => $definition->idAndTenant->id,
             'tenant_id' => $definition->idAndTenant->tenantId,
             'sku_id' => $definition->skuId,
             'name' => $definition->name,
