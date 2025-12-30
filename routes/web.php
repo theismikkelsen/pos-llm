@@ -28,6 +28,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('locations', [LocationController::class, 'store'])->name('locations.store');
 
     Route::get('products', [ProductsController::class, 'index'])->name('products.index');
+    Route::get('products/create', [ProductsController::class, 'create'])->name('products.create');
+    Route::post('products', [ProductsController::class, 'store'])->name('products.store');
     Route::get('products/{id}', [ProductsController::class, 'show'])->whereNumber('id')->name('products.show');
 });
 

@@ -9,6 +9,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import { Button } from '@/components/ui/button';
 import { Head, Link } from '@inertiajs/react';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -29,6 +30,9 @@ export default function InventoryItemDefinitions({
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
                 <div className="flex items-center justify-between">
                     <h1 className="text-lg font-semibold">Products</h1>
+                    <Button asChild>
+                        <Link href="/products/create">New product</Link>
+                    </Button>
                 </div>
                 <div className="overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
                     {items.length === 0 ? (

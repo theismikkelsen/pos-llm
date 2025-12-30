@@ -38,3 +38,41 @@ test('authenticated users can visit an individual product page', function () {
         ->assertOk()
         ->assertSee('Product A');
 });
+
+test('authenticated users can visit the create product page', function () {
+    // Arrange
+    $this->actingAs(User::factory()->create());
+
+    // Act
+    $response = $this->get('/products/create');
+
+    // Assert
+    $response->assertOk();
+});
+
+test('authenticated users can create a product', function () {
+    // Arrange
+    $this->actingAs(User::factory()->create());
+
+    $repository = resolve(InventoryItemDefinitionRepository::class);
+
+    // Act
+    $response = $this->post('/products', [
+        'sku_id' => 'SKU-NEW-1',
+        'name' => 'Product New',
+        'is_lot_tracked' => true,
+        'is_serial_tracked' => false,
+    ]);
+
+    // Assert
+    $response->assertRedirect('/products');
+
+    $createdProduct = $repository
+        ->listByTenantId(1)
+        ->first(fn (InventoryItemDefinition $product) => $product->skuId === 'SKU-NEW-1');
+
+    expect($createdProduct)->not->toBeNull();
+    expect($createdProduct?->name)->toBe('Product New');
+    expect($createdProduct?->isLotTracked)->toBeTrue();
+    expect($createdProduct?->isSerialTracked)->toBeFalse();
+});

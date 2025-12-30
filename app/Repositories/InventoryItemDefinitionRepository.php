@@ -43,6 +43,16 @@ final class InventoryItemDefinitionRepository
             });
     }
 
+    public function existsBySkuId(int $tenantId, string $skuId): bool
+    {
+        return DB::table('inventory_item_definitions')
+            ->where([
+                'tenant_id' => $tenantId,
+                'sku_id' => $skuId,
+            ])
+            ->exists();
+    }
+
     private static function mapToDomain(object $dbRow): InventoryItemDefinition
     {
         return new InventoryItemDefinition(
