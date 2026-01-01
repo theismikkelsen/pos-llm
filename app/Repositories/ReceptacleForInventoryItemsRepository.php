@@ -3,17 +3,17 @@
 namespace App\Repositories;
 
 use App\Domain\Inventory\IdAndTenant;
-use App\Domain\Inventory\InventoryLocation;
-use App\Domain\Inventory\InventoryLocationReferenceType;
+use App\Domain\Inventory\ReceptacleForInventoryItems;
+use App\Domain\Inventory\ReceptacleForInventoryItemsReferenceType;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
-final class InventoryLocationRepository
+final class ReceptacleForInventoryItemsRepository
 {
-    public function add(InventoryLocation $location): int
+    public function add(ReceptacleForInventoryItems $location): int
     {
-        return DB::table('inventory_locations')->insertGetId(
+        return DB::table('receptacles_for_inventory_items')->insertGetId(
             [
                 ...self::mapToPersistence($location),
                 'time_created' => CarbonImmutable::now(),
@@ -22,9 +22,9 @@ final class InventoryLocationRepository
         );
     }
 
-    public function getById(int $tenantId, int $id): InventoryLocation
+    public function getById(int $tenantId, int $id): ReceptacleForInventoryItems
     {
-        $dbRow = DB::table('inventory_locations')
+        $dbRow = DB::table('receptacles_for_inventory_items')
             ->where([
                 'tenant_id' => $tenantId,
                 'id' => $id,
@@ -35,26 +35,26 @@ final class InventoryLocationRepository
     }
 
     /**
-     * @return Collection<int, InventoryLocation>
+     * @return Collection<int, ReceptacleForInventoryItems>
      */
     public function listByTenantId(int $tenantId): Collection
     {
-        return DB::table('inventory_locations')
+        return DB::table('receptacles_for_inventory_items')
             ->where('tenant_id', $tenantId)
             ->orderBy('reference_type_id')
             ->orderBy('reference_id')
             ->get()
-            ->map(static function (object $dbRow): InventoryLocation {
+            ->map(static function (object $dbRow): ReceptacleForInventoryItems {
                 return self::mapToDomain($dbRow);
             });
     }
 
     public function existsByReference(
         int $tenantId,
-        InventoryLocationReferenceType $referenceType,
+        ReceptacleForInventoryItemsReferenceType $referenceType,
         string $referenceId
     ): bool {
-        return DB::table('inventory_locations')
+        return DB::table('receptacles_for_inventory_items')
             ->where([
                 'tenant_id' => $tenantId,
                 'reference_type_id' => $referenceType->value,
@@ -63,12 +63,12 @@ final class InventoryLocationRepository
             ->exists();
     }
 
-    private static function mapToDomain(object $dbRow): InventoryLocation
+    private static function mapToDomain(object $dbRow): ReceptacleForInventoryItems
     {
-        return new InventoryLocation(
+        return new ReceptacleForInventoryItems(
             idAndTenant: new IdAndTenant(id: $dbRow->id, tenantId: $dbRow->tenant_id), // @phpstan-ignore property.notFound, property.notFound
             heldInventoryIsAvailable: (bool) $dbRow->held_inventory_is_available, // @phpstan-ignore property.notFound
-            referenceTypeId: InventoryLocationReferenceType::from($dbRow->reference_type_id), // @phpstan-ignore property.notFound
+            referenceTypeId: ReceptacleForInventoryItemsReferenceType::from($dbRow->reference_type_id), // @phpstan-ignore property.notFound
             referenceId: $dbRow->reference_id, // @phpstan-ignore property.notFound
         );
     }
@@ -76,7 +76,7 @@ final class InventoryLocationRepository
     /**
      * @return array<string, bool|int|string|null|CarbonImmutable>
      */
-    private static function mapToPersistence(InventoryLocation $location): array
+    private static function mapToPersistence(ReceptacleForInventoryItems $location): array
     {
         return [
             'id' => $location->idAndTenant->id,

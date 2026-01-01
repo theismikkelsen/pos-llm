@@ -5,17 +5,17 @@ namespace App\Domain\Inventory;
 use Carbon\CarbonImmutable;
 use Spatie\LaravelData\Data;
 
-final class InventoryLocation extends Data
+final class ReceptacleForInventoryItems extends Data
 {
     public function __construct(
         public readonly IdAndTenant $idAndTenant,
         public readonly bool $heldInventoryIsAvailable,
-        public readonly InventoryLocationReferenceType $referenceTypeId,
+        public readonly ReceptacleForInventoryItemsReferenceType $referenceTypeId,
         public readonly string $referenceId,
     ) {
     }
 
-    public function withArgs(\CodeTooling\OmittedArg|IdAndTenant $idAndTenant = new \CodeTooling\OmittedArg, \CodeTooling\OmittedArg|bool $heldInventoryIsAvailable = new \CodeTooling\OmittedArg, \CodeTooling\OmittedArg|InventoryLocationReferenceType $referenceTypeId = new \CodeTooling\OmittedArg, \CodeTooling\OmittedArg|string $referenceId = new \CodeTooling\OmittedArg): self
+    public function withArgs(\CodeTooling\OmittedArg|IdAndTenant $idAndTenant = new \CodeTooling\OmittedArg, \CodeTooling\OmittedArg|bool $heldInventoryIsAvailable = new \CodeTooling\OmittedArg, \CodeTooling\OmittedArg|ReceptacleForInventoryItemsReferenceType $referenceTypeId = new \CodeTooling\OmittedArg, \CodeTooling\OmittedArg|string $referenceId = new \CodeTooling\OmittedArg): self
     {
         return new self(idAndTenant: $idAndTenant instanceof \CodeTooling\OmittedArg ? $this->idAndTenant : $idAndTenant, heldInventoryIsAvailable: $heldInventoryIsAvailable instanceof \CodeTooling\OmittedArg ? $this->heldInventoryIsAvailable : $heldInventoryIsAvailable, referenceTypeId: $referenceTypeId instanceof \CodeTooling\OmittedArg ? $this->referenceTypeId : $referenceTypeId, referenceId: $referenceId instanceof \CodeTooling\OmittedArg ? $this->referenceId : $referenceId);
     }

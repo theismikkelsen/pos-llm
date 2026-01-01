@@ -5,16 +5,16 @@ namespace CodeTooling\Testing;
 use App\Domain\Inventory\IdAndTenant;
 use App\Domain\Inventory\InventoryItemAtSkuLevel;
 use App\Domain\Inventory\InventoryItemAtLowestDistinctLevel;
-use App\Domain\Inventory\InventoryLocation;
-use App\Domain\Inventory\InventoryLocationReferenceType;
+use App\Domain\Inventory\ReceptacleForInventoryItems;
+use App\Domain\Inventory\ReceptacleForInventoryItemsReferenceType;
 use App\Repositories\InventoryItemAtSkuLevelRepository;
 use App\Repositories\InventoryItemAtLowestDistinctLevelRepository;
-use App\Repositories\InventoryLocationRepository;
+use App\Repositories\ReceptacleForInventoryItemsRepository;
 use CodeTooling\Testing\FactoryForTests;
 
 class BasicTestSetupDataSeeder
 {
-    private InventoryLocationRepository $locationRepository;
+    private ReceptacleForInventoryItemsRepository $locationRepository;
     private InventoryItemAtSkuLevelRepository $definitionRepository;
     private InventoryItemAtLowestDistinctLevelRepository $instanceRepository;
 
@@ -22,7 +22,7 @@ class BasicTestSetupDataSeeder
         private readonly int $tenantId
     ) {
         // Resolve repositories once to keep the seeding loop clean
-        $this->locationRepository = resolve(InventoryLocationRepository::class);
+        $this->locationRepository = resolve(ReceptacleForInventoryItemsRepository::class);
         $this->definitionRepository = resolve(InventoryItemAtSkuLevelRepository::class);
         $this->instanceRepository = resolve(InventoryItemAtLowestDistinctLevelRepository::class);
     }
@@ -44,9 +44,9 @@ class BasicTestSetupDataSeeder
     {
         foreach ($ids as $id) {
             $this->locationRepository->add(
-                FactoryForTests::create(InventoryLocation::class)->withArgs(
+                FactoryForTests::create(ReceptacleForInventoryItems::class)->withArgs(
                     idAndTenant: new IdAndTenant(id: $id, tenantId: $this->tenantId),
-                    referenceTypeId: InventoryLocationReferenceType::WAREHOUSE_LOCATION,
+                    referenceTypeId: ReceptacleForInventoryItemsReferenceType::WAREHOUSE_LOCATION,
                     referenceId: (string) $id,
                 )
             );

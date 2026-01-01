@@ -4,10 +4,10 @@ namespace CodeTooling\Testing;
 
 use App\Domain\Inventory\IdAndTenant;
 use App\Domain\Inventory\InventoryItemAtLowestDistinctLevel;
-use App\Domain\Inventory\InventoryMovement;
+use App\Domain\Inventory\TransferOfInventoryItemsBetweenReceptacles;
 use App\Domain\Inventory\InventoryItemAtSkuLevel;
-use App\Domain\Inventory\InventoryLocation;
-use App\Domain\Inventory\InventoryLocationReferenceType;
+use App\Domain\Inventory\ReceptacleForInventoryItems;
+use App\Domain\Inventory\ReceptacleForInventoryItemsReferenceType;
 use Carbon\CarbonImmutable;
 
 class FactoryForTests
@@ -28,11 +28,11 @@ class FactoryForTests
                 isSerialTracked: FALSE,
                 createdAt: CarbonImmutable::now(),
             ),
-            InventoryMovement::class => new InventoryMovement(
+            TransferOfInventoryItemsBetweenReceptacles::class => new TransferOfInventoryItemsBetweenReceptacles(
                 idAndTenant: new IdAndTenant(id: NULL, tenantId: 1),
                 inventoryItemAtLowestDistinctLevelId: 1,
-                inventoryLocationIdFrom: 10,
-                inventoryLocationIdTo: 20,
+                receptacleIdFrom: 10,
+                receptacleIdTo: 20,
                 quantityAdjustment: 5,
                 timeCreated: CarbonImmutable::now(),
             ),
@@ -42,10 +42,10 @@ class FactoryForTests
                 lotNumber: 'LOT-1',
                 serialNumber: 'SER-1',
             ),
-            InventoryLocation::class => new InventoryLocation(
+            ReceptacleForInventoryItems::class => new ReceptacleForInventoryItems(
                 idAndTenant: new IdAndTenant(id: 1, tenantId: 1),
                 heldInventoryIsAvailable: TRUE,
-                referenceTypeId: InventoryLocationReferenceType::WAREHOUSE_LOCATION,
+                referenceTypeId: ReceptacleForInventoryItemsReferenceType::WAREHOUSE_LOCATION,
                 referenceId: '1',
             ),
             default => throw new \InvalidArgumentException("Class {$classFqn} not supported"),

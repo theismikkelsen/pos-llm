@@ -8,19 +8,19 @@ use Spatie\LaravelData\Data;
 class InventoryLevelsForInventoryInstanceItem extends Data
 {
     /**
-     * @param Collection<int, InventoryLevelForLocation> $inventoryLevels
+     * @param Collection<int, InventoryLevelForReceptacle> $inventoryLevels
      */
     public function __construct(
         public readonly int $inventoryItemAtLowestDistinctLevelId,
         public readonly Collection $inventoryLevels,
     ) {
-        if ($this->inventoryLevels->contains(fn(InventoryLevelForLocation $level) => $level->inventoryItemAtLowestDistinctLevelId !== $this->inventoryItemAtLowestDistinctLevelId)) {
+        if ($this->inventoryLevels->contains(fn(InventoryLevelForReceptacle $level) => $level->inventoryItemAtLowestDistinctLevelId !== $this->inventoryItemAtLowestDistinctLevelId)) {
             throw new \InvalidArgumentException('All inventory levels must belong to the specified inventory item instance');
         }
     }
 
     /**
-    * @param \CodeTooling\OmittedArg|Collection<int, InventoryLevelForLocation> $inventoryLevels
+    * @param \CodeTooling\OmittedArg|Collection<int, InventoryLevelForReceptacle> $inventoryLevels
     */
     public function withArgs(\CodeTooling\OmittedArg|int $inventoryItemAtLowestDistinctLevelId = new \CodeTooling\OmittedArg, \CodeTooling\OmittedArg|Collection $inventoryLevels = new \CodeTooling\OmittedArg): self
     {

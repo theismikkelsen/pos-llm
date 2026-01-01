@@ -2,7 +2,7 @@
 
 namespace App\Data\Locations;
 
-use App\Domain\Inventory\InventoryLocation;
+use App\Domain\Inventory\ReceptacleForInventoryItems;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
@@ -17,7 +17,7 @@ final class LocationData extends Data
     ) {
     }
 
-    public static function fromInventoryLocation(InventoryLocation $location): self
+    public static function fromReceptacleForInventoryItems(ReceptacleForInventoryItems $location): self
     {
         $id = $location->idAndTenant->id;
 

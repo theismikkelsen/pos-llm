@@ -2,47 +2,47 @@
 
 namespace App\Repositories;
 
-use App\Domain\Inventory\InventoryLevelForLocation;
+use App\Domain\Inventory\InventoryLevelForReceptacle;
 use App\Domain\Inventory\InventoryLevelsForInventoryInstanceItem;
-use App\Domain\Inventory\InventoryMovement;
+use App\Domain\Inventory\TransferOfInventoryItemsBetweenReceptacles;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
-class InventoryMovementLedger
+class TransferOfInventoryItemsBetweenReceptaclesLedger
 {
     public function __construct(
         private readonly InventoryItemAtLowestDistinctLevelRepository $inventoryItemAtLowestDistinctLevelRepository,
-        private readonly InventoryLocationRepository $inventoryLocationRepository,
+        private readonly ReceptacleForInventoryItemsRepository $receptacleForInventoryItemsRepository,
     ) {
     }
 
-    public function add(InventoryMovement $movement): int
+    public function add(TransferOfInventoryItemsBetweenReceptacles $movement): int
     {
         $this->inventoryItemAtLowestDistinctLevelRepository->getById(
             tenantId: $movement->idAndTenant->tenantId,
             id: $movement->inventoryItemAtLowestDistinctLevelId,
         );
 
-        $this->inventoryLocationRepository->getById(
+        $this->receptacleForInventoryItemsRepository->getById(
             tenantId: $movement->idAndTenant->tenantId,
-            id: $movement->inventoryLocationIdFrom,
+            id: $movement->receptacleIdFrom,
         );
 
-        $this->inventoryLocationRepository->getById(
+        $this->receptacleForInventoryItemsRepository->getById(
             tenantId: $movement->idAndTenant->tenantId,
-            id: $movement->inventoryLocationIdTo,
+            id: $movement->receptacleIdTo,
         );
 
         return DB::transaction(function () use ($movement): int {
-            $id = DB::table('inventory_transactions')->insertGetId(
+            $id = DB::table('transfers_of_inventory_item')->insertGetId(
                 self::mapToPersistence($movement),
             );
 
             $this->adjustInventoryLevelProjection(
                 tenantId: $movement->idAndTenant->tenantId,
                 inventoryItemAtLowestDistinctLevelId: $movement->inventoryItemAtLowestDistinctLevelId,
-                inventoryLocationId: $movement->inventoryLocationIdFrom,
+                receptacleId: $movement->receptacleIdFrom,
                 quantityDelta: -$movement->quantityAdjustment,
                 timeUpdated: $movement->timeCreated,
             );
@@ -50,7 +50,7 @@ class InventoryMovementLedger
             $this->adjustInventoryLevelProjection(
                 tenantId: $movement->idAndTenant->tenantId,
                 inventoryItemAtLowestDistinctLevelId: $movement->inventoryItemAtLowestDistinctLevelId,
-                inventoryLocationId: $movement->inventoryLocationIdTo,
+                receptacleId: $movement->receptacleIdTo,
                 quantityDelta: $movement->quantityAdjustment,
                 timeUpdated: $movement->timeCreated,
             );
@@ -60,16 +60,16 @@ class InventoryMovementLedger
     }
 
     /**
-     * @return Collection<int, InventoryMovement>
+     * @return Collection<int, TransferOfInventoryItemsBetweenReceptacles>
      */
     public function find(int $tenantId): Collection
     {
-        return DB::table('inventory_transactions')
+        return DB::table('transfers_of_inventory_item')
             ->where('tenant_id', $tenantId)
             ->orderBy('time_created')
             ->orderBy('id')
             ->get()
-            ->map(static function (object $dbRow): InventoryMovement {
+            ->map(static function (object $dbRow): TransferOfInventoryItemsBetweenReceptacles {
                 return self::mapToDomain($dbRow);
             });
     }
@@ -114,7 +114,7 @@ class InventoryMovementLedger
     private function adjustInventoryLevelProjection(
         int $tenantId,
         int $inventoryItemAtLowestDistinctLevelId,
-        int $inventoryLocationId,
+        int $receptacleId,
         int $quantityDelta,
         CarbonImmutable $timeUpdated,
     ): void {
@@ -127,12 +127,12 @@ class InventoryMovementLedger
                 [
                     'tenant_id' => $tenantId,
                     'inventory_item_at_lowest_distinct_level_id' => $inventoryItemAtLowestDistinctLevelId,
-                    'inventory_location_id' => $inventoryLocationId,
+                    'receptacle_for_inventory_item_id' => $receptacleId,
                     'quantity' => $quantityDelta,
                     'time_updated' => $timeUpdated,
                 ],
             ],
-            ['tenant_id', 'inventory_item_at_lowest_distinct_level_id', 'inventory_location_id'],
+            ['tenant_id', 'inventory_item_at_lowest_distinct_level_id', 'receptacle_for_inventory_item_id'],
             [
                 'quantity' => DB::raw('quantity + VALUES(quantity)'),
                 'time_updated' => $timeUpdated,
@@ -150,14 +150,14 @@ class InventoryMovementLedger
             ->where('tenant_id', $tenantId)
             ->whereIn('inventory_item_at_lowest_distinct_level_id', $inventoryItemAtLowestDistinctLevelIds)
             ->orderBy('inventory_item_at_lowest_distinct_level_id')
-            ->orderBy('inventory_location_id')
+            ->orderBy('receptacle_for_inventory_item_id')
             ->get()
             ->groupBy('inventory_item_at_lowest_distinct_level_id')
             ->map(static function (Collection $rows): Collection {
-                return $rows->map(static function (object $dbRow): InventoryLevelForLocation {
-                    return new InventoryLevelForLocation(
+                return $rows->map(static function (object $dbRow): InventoryLevelForReceptacle {
+                    return new InventoryLevelForReceptacle(
                         inventoryItemAtLowestDistinctLevelId: $dbRow->inventory_item_at_lowest_distinct_level_id,
-                        inventoryLocationId: $dbRow->inventory_location_id,
+                        receptacleId: $dbRow->receptacle_for_inventory_item_id,
                         quantity: $dbRow->quantity,
                     );
                 });
@@ -174,13 +174,13 @@ class InventoryMovementLedger
             });
     }
 
-    private static function mapToDomain(object $dbRow): InventoryMovement
+    private static function mapToDomain(object $dbRow): TransferOfInventoryItemsBetweenReceptacles
     {
-        return new InventoryMovement(
+        return new TransferOfInventoryItemsBetweenReceptacles(
             idAndTenant: new \App\Domain\Inventory\IdAndTenant(id: $dbRow->id, tenantId: $dbRow->tenant_id), // @phpstan-ignore property.notFound, property.notFound
             inventoryItemAtLowestDistinctLevelId: $dbRow->inventory_item_at_lowest_distinct_level_id, // @phpstan-ignore property.notFound
-            inventoryLocationIdFrom: $dbRow->inventory_location_id_from, // @phpstan-ignore property.notFound
-            inventoryLocationIdTo: $dbRow->inventory_location_id_to, // @phpstan-ignore property.notFound
+            receptacleIdFrom: $dbRow->receptacle_for_inventory_item_id_from, // @phpstan-ignore property.notFound
+            receptacleIdTo: $dbRow->receptacle_for_inventory_item_id_to, // @phpstan-ignore property.notFound
             quantityAdjustment: $dbRow->quantity_adjustment, // @phpstan-ignore property.notFound
             timeCreated: $dbRow->time_created ? CarbonImmutable::createFromFormat('Y-m-d H:i:s', $dbRow->time_created) : CarbonImmutable::now(), // @phpstan-ignore property.notFound
         );
@@ -189,14 +189,14 @@ class InventoryMovementLedger
     /**
      * @return array<string, int|CarbonImmutable>
      */
-    private static function mapToPersistence(InventoryMovement $movement): array
+    private static function mapToPersistence(TransferOfInventoryItemsBetweenReceptacles $movement): array
     {
         return [
             'id' => $movement->idAndTenant->id,
             'tenant_id' => $movement->idAndTenant->tenantId,
             'inventory_item_at_lowest_distinct_level_id' => $movement->inventoryItemAtLowestDistinctLevelId,
-            'inventory_location_id_from' => $movement->inventoryLocationIdFrom,
-            'inventory_location_id_to' => $movement->inventoryLocationIdTo,
+            'receptacle_for_inventory_item_id_from' => $movement->receptacleIdFrom,
+            'receptacle_for_inventory_item_id_to' => $movement->receptacleIdTo,
             'quantity_adjustment' => $movement->quantityAdjustment,
             'time_created' => $movement->timeCreated,
         ];

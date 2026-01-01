@@ -1,12 +1,12 @@
 <?php
 
 use App\Domain\Inventory\IdAndTenant;
-use App\Domain\Inventory\InventoryMovement;
-use App\Repositories\InventoryMovementLedger;
+use App\Domain\Inventory\TransferOfInventoryItemsBetweenReceptacles;
+use App\Repositories\TransferOfInventoryItemsBetweenReceptaclesLedger;
 use CodeTooling\Testing\BasicTestSetupDataSeeder;
 use CodeTooling\Testing\FactoryForTests;
 
-$ledger = resolve(InventoryMovementLedger::class);
+$ledger = resolve(TransferOfInventoryItemsBetweenReceptaclesLedger::class);
 
 test('it adds inventory movements and updates projections', function () use ($ledger) {
     // Step: Arrange
@@ -19,11 +19,11 @@ test('it adds inventory movements and updates projections', function () use ($le
         ->seedInventoryItemAtLowestDistinctLevelWithIdsThatMirrorTheIdOfTheirParentInventoryItemAtSkuLevel(ids: [$instanceId])
         ->seedLocations(ids: [$locationFromId, $locationToId]);
 
-    $movement = FactoryForTests::create(InventoryMovement::class)->withArgs(
+    $movement = FactoryForTests::create(TransferOfInventoryItemsBetweenReceptacles::class)->withArgs(
         idAndTenant: new IdAndTenant(id: NULL, tenantId: 1),
         inventoryItemAtLowestDistinctLevelId: $instanceId,
-        inventoryLocationIdFrom: $locationFromId,
-        inventoryLocationIdTo: $locationToId,
+        receptacleIdFrom: $locationFromId,
+        receptacleIdTo: $locationToId,
         quantityAdjustment: 7,
     );
 
@@ -31,16 +31,16 @@ test('it adds inventory movements and updates projections', function () use ($le
     $movementId = $ledger->add($movement);
     $movements = $ledger->find(1);
     $projection = $ledger->projectInventoryLevelForInventoryItemAtLowestDistinctLevel(1, $instanceId);
-    $levelsByLocation = $projection->inventoryLevels->keyBy('inventoryLocationId');
+    $levelsByLocation = $projection->inventoryLevels->keyBy('receptacleId');
 
     // Step: Assert
-    $addedMovement = $movements->firstWhere(fn (InventoryMovement $candidate): bool => $candidate->idAndTenant->id === $movementId);
+    $addedMovement = $movements->firstWhere(fn (TransferOfInventoryItemsBetweenReceptacles $candidate): bool => $candidate->idAndTenant->id === $movementId);
 
     expect($addedMovement)->not->toBeNull();
     expect($addedMovement?->idAndTenant->tenantId)->toBe(1);
     expect($addedMovement?->inventoryItemAtLowestDistinctLevelId)->toBe($instanceId);
-    expect($addedMovement?->inventoryLocationIdFrom)->toBe($locationFromId);
-    expect($addedMovement?->inventoryLocationIdTo)->toBe($locationToId);
+    expect($addedMovement?->receptacleIdFrom)->toBe($locationFromId);
+    expect($addedMovement?->receptacleIdTo)->toBe($locationToId);
     expect($addedMovement?->quantityAdjustment)->toBe(7);
 
     expect($levelsByLocation->get($locationFromId)?->quantity)->toBe(-7);
@@ -61,19 +61,19 @@ test('it finds movements for a tenant', function () use ($ledger) {
         ->seedInventoryItemAtLowestDistinctLevelWithIdsThatMirrorTheIdOfTheirParentInventoryItemAtSkuLevel(ids: [$firstInstanceId, $secondInstanceId])
         ->seedLocations(ids: [$locationFromId, $locationToId, $secondLocationFromId, $secondLocationToId]);
 
-    $firstMovement = FactoryForTests::create(InventoryMovement::class)->withArgs(
+    $firstMovement = FactoryForTests::create(TransferOfInventoryItemsBetweenReceptacles::class)->withArgs(
         idAndTenant: new IdAndTenant(id: NULL, tenantId: 1),
         inventoryItemAtLowestDistinctLevelId: $firstInstanceId,
-        inventoryLocationIdFrom: $locationFromId,
-        inventoryLocationIdTo: $locationToId,
+        receptacleIdFrom: $locationFromId,
+        receptacleIdTo: $locationToId,
         quantityAdjustment: 3,
     );
 
-    $secondMovement = FactoryForTests::create(InventoryMovement::class)->withArgs(
+    $secondMovement = FactoryForTests::create(TransferOfInventoryItemsBetweenReceptacles::class)->withArgs(
         idAndTenant: new IdAndTenant(id: NULL, tenantId: 1),
         inventoryItemAtLowestDistinctLevelId: $secondInstanceId,
-        inventoryLocationIdFrom: $secondLocationFromId,
-        inventoryLocationIdTo: $secondLocationToId,
+        receptacleIdFrom: $secondLocationFromId,
+        receptacleIdTo: $secondLocationToId,
         quantityAdjustment: 4,
     );
 
@@ -99,19 +99,19 @@ test('it projects inventory levels for a single instance', function () use ($led
         ->seedInventoryItemAtLowestDistinctLevelWithIdsThatMirrorTheIdOfTheirParentInventoryItemAtSkuLevel(ids: [$instanceId])
         ->seedLocations(ids: [$locationFromId, $locationToId]);
 
-    $firstMovement = FactoryForTests::create(InventoryMovement::class)->withArgs(
+    $firstMovement = FactoryForTests::create(TransferOfInventoryItemsBetweenReceptacles::class)->withArgs(
         idAndTenant: new IdAndTenant(id: NULL, tenantId: 1),
         inventoryItemAtLowestDistinctLevelId: $instanceId,
-        inventoryLocationIdFrom: $locationFromId,
-        inventoryLocationIdTo: $locationToId,
+        receptacleIdFrom: $locationFromId,
+        receptacleIdTo: $locationToId,
         quantityAdjustment: 5,
     );
 
-    $secondMovement = FactoryForTests::create(InventoryMovement::class)->withArgs(
+    $secondMovement = FactoryForTests::create(TransferOfInventoryItemsBetweenReceptacles::class)->withArgs(
         idAndTenant: new IdAndTenant(id: NULL, tenantId: 1),
         inventoryItemAtLowestDistinctLevelId: $instanceId,
-        inventoryLocationIdFrom: $locationFromId,
-        inventoryLocationIdTo: $locationToId,
+        receptacleIdFrom: $locationFromId,
+        receptacleIdTo: $locationToId,
         quantityAdjustment: 3,
     );
 
@@ -120,7 +120,7 @@ test('it projects inventory levels for a single instance', function () use ($led
 
     // Step: Act
     $projection = $ledger->projectInventoryLevelForInventoryItemAtLowestDistinctLevel(1, $instanceId);
-    $levelsByLocation = $projection->inventoryLevels->keyBy('inventoryLocationId');
+    $levelsByLocation = $projection->inventoryLevels->keyBy('receptacleId');
 
     // Step: Assert
     expect($projection->inventoryItemAtLowestDistinctLevelId)->toBe($instanceId);
@@ -142,19 +142,19 @@ test('it projects inventory levels for multiple instances', function () use ($le
         ->seedInventoryItemAtLowestDistinctLevelWithIdsThatMirrorTheIdOfTheirParentInventoryItemAtSkuLevel(ids: [$firstInstanceId, $secondInstanceId])
         ->seedLocations(ids: [$firstLocationFromId, $firstLocationToId, $secondLocationFromId, $secondLocationToId]);
 
-    $firstMovement = FactoryForTests::create(InventoryMovement::class)->withArgs(
+    $firstMovement = FactoryForTests::create(TransferOfInventoryItemsBetweenReceptacles::class)->withArgs(
         idAndTenant: new IdAndTenant(id: NULL, tenantId: 1),
         inventoryItemAtLowestDistinctLevelId: $firstInstanceId,
-        inventoryLocationIdFrom: $firstLocationFromId,
-        inventoryLocationIdTo: $firstLocationToId,
+        receptacleIdFrom: $firstLocationFromId,
+        receptacleIdTo: $firstLocationToId,
         quantityAdjustment: 2,
     );
 
-    $secondMovement = FactoryForTests::create(InventoryMovement::class)->withArgs(
+    $secondMovement = FactoryForTests::create(TransferOfInventoryItemsBetweenReceptacles::class)->withArgs(
         idAndTenant: new IdAndTenant(id: NULL, tenantId: 1),
         inventoryItemAtLowestDistinctLevelId: $secondInstanceId,
-        inventoryLocationIdFrom: $secondLocationFromId,
-        inventoryLocationIdTo: $secondLocationToId,
+        receptacleIdFrom: $secondLocationFromId,
+        receptacleIdTo: $secondLocationToId,
         quantityAdjustment: 6,
     );
 
@@ -171,8 +171,8 @@ test('it projects inventory levels for multiple instances', function () use ($le
     expect($projections->get(1)?->inventoryItemAtLowestDistinctLevelId)->toBe($firstInstanceId);
     expect($projections->get(2)?->inventoryItemAtLowestDistinctLevelId)->toBe($missingInstanceId);
 
-    $firstLevelsByLocation = $projections->get(0)?->inventoryLevels->keyBy('inventoryLocationId');
-    $secondLevelsByLocation = $projections->get(1)?->inventoryLevels->keyBy('inventoryLocationId');
+    $firstLevelsByLocation = $projections->get(0)?->inventoryLevels->keyBy('receptacleId');
+    $secondLevelsByLocation = $projections->get(1)?->inventoryLevels->keyBy('receptacleId');
 
     expect($firstLevelsByLocation?->get($secondLocationFromId)?->quantity)->toBe(-6);
     expect($firstLevelsByLocation?->get($secondLocationToId)?->quantity)->toBe(6);
@@ -200,19 +200,19 @@ test('it isolates movements by tenant', function () use ($ledger) {
         ->seedInventoryItemAtLowestDistinctLevelWithIdsThatMirrorTheIdOfTheirParentInventoryItemAtSkuLevel(ids: [$otherTenantInstanceId])
         ->seedLocations(ids: [$otherTenantLocationFromId, $otherTenantLocationToId]);
 
-    $tenantMovement = FactoryForTests::create(InventoryMovement::class)->withArgs(
+    $tenantMovement = FactoryForTests::create(TransferOfInventoryItemsBetweenReceptacles::class)->withArgs(
         idAndTenant: new IdAndTenant(id: NULL, tenantId: 1),
         inventoryItemAtLowestDistinctLevelId: $tenantInstanceId,
-        inventoryLocationIdFrom: $tenantLocationFromId,
-        inventoryLocationIdTo: $tenantLocationToId,
+        receptacleIdFrom: $tenantLocationFromId,
+        receptacleIdTo: $tenantLocationToId,
         quantityAdjustment: 3,
     );
 
-    $otherTenantMovement = FactoryForTests::create(InventoryMovement::class)->withArgs(
+    $otherTenantMovement = FactoryForTests::create(TransferOfInventoryItemsBetweenReceptacles::class)->withArgs(
         idAndTenant: new IdAndTenant(id: NULL, tenantId: 2),
         inventoryItemAtLowestDistinctLevelId: $otherTenantInstanceId,
-        inventoryLocationIdFrom: $otherTenantLocationFromId,
-        inventoryLocationIdTo: $otherTenantLocationToId,
+        receptacleIdFrom: $otherTenantLocationFromId,
+        receptacleIdTo: $otherTenantLocationToId,
         quantityAdjustment: 5,
     );
 

@@ -16,9 +16,9 @@ make a draft task for this feature:
 
 ### Draft Agent Task Document Created By Agent 
 ```
-The add-method on InventoryMovementLedger should verify that inventoryItemAtLowestDistinctLevel and inventoryLocations exist. 
+The add-method on TransferOfInventoryItemsBetweenReceptaclesLedger should verify that inventoryItemAtLowestDistinctLevel and receptaclesForInventoryItems exist. 
 
-This requires some upstream work first, to implement classes for InventoryItemAtLowestDistinctLevel and InventorLocation (implement only methods required to support change to InventoryMovementLedger and required for tests).
+This requires some upstream work first, to implement classes for InventoryItemAtLowestDistinctLevel and InventorLocation (implement only methods required to support change to TransferOfInventoryItemsBetweenReceptaclesLedger and required for tests).
 
 ## Implementation Details
 

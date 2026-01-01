@@ -1,19 +1,19 @@
 <?php
 
 use App\Domain\Inventory\IdAndTenant;
-use App\Domain\Inventory\InventoryLocation;
-use App\Domain\Inventory\InventoryLocationReferenceType;
-use App\Repositories\InventoryLocationRepository;
+use App\Domain\Inventory\ReceptacleForInventoryItems;
+use App\Domain\Inventory\ReceptacleForInventoryItemsReferenceType;
+use App\Repositories\ReceptacleForInventoryItemsRepository;
 use CodeTooling\Testing\FactoryForTests;
 
 test('it adds and retrieves inventory locations', function () {
     // Arrange
-    $locationRepository = resolve(InventoryLocationRepository::class);
+    $locationRepository = resolve(ReceptacleForInventoryItemsRepository::class);
 
-    $location = FactoryForTests::create(InventoryLocation::class)->withArgs(
+    $location = FactoryForTests::create(ReceptacleForInventoryItems::class)->withArgs(
         idAndTenant: new IdAndTenant(id: NULL, tenantId: 1),
         heldInventoryIsAvailable: FALSE,
-        referenceTypeId: InventoryLocationReferenceType::ORDER_PICKING_CONTAINER,
+        referenceTypeId: ReceptacleForInventoryItemsReferenceType::ORDER_PICKING_CONTAINER,
         referenceId: '450',
     );
 
@@ -25,27 +25,27 @@ test('it adds and retrieves inventory locations', function () {
     expect($storedLocation->idAndTenant->id)->toBe($locationId);
     expect($storedLocation->idAndTenant->tenantId)->toBe(1);
     expect($storedLocation->heldInventoryIsAvailable)->toBeFalse();
-    expect($storedLocation->referenceTypeId)->toBe(InventoryLocationReferenceType::ORDER_PICKING_CONTAINER);
+    expect($storedLocation->referenceTypeId)->toBe(ReceptacleForInventoryItemsReferenceType::ORDER_PICKING_CONTAINER);
     expect($storedLocation->referenceId)->toBe('450');
 });
 
 test('it lists inventory locations for a tenant', function () {
     // Arrange
-    $locationRepository = resolve(InventoryLocationRepository::class);
+    $locationRepository = resolve(ReceptacleForInventoryItemsRepository::class);
 
     $locationRepository->add(
-        FactoryForTests::create(InventoryLocation::class)->withArgs(
+        FactoryForTests::create(ReceptacleForInventoryItems::class)->withArgs(
             idAndTenant: new IdAndTenant(id: null, tenantId: 1),
-            referenceTypeId: InventoryLocationReferenceType::WAREHOUSE_LOCATION,
+            referenceTypeId: ReceptacleForInventoryItemsReferenceType::WAREHOUSE_LOCATION,
             referenceId: '100',
             heldInventoryIsAvailable: true,
         ),
     );
 
     $locationRepository->add(
-        FactoryForTests::create(InventoryLocation::class)->withArgs(
+        FactoryForTests::create(ReceptacleForInventoryItems::class)->withArgs(
             idAndTenant: new IdAndTenant(id: null, tenantId: 1),
-            referenceTypeId: InventoryLocationReferenceType::WAREHOUSE_LOCATION,
+            referenceTypeId: ReceptacleForInventoryItemsReferenceType::WAREHOUSE_LOCATION,
             referenceId: '101',
             heldInventoryIsAvailable: false,
         ),
@@ -61,21 +61,21 @@ test('it lists inventory locations for a tenant', function () {
 
 test('it only lists locations for the requested tenant', function () {
     // Arrange
-    $locationRepository = resolve(InventoryLocationRepository::class);
+    $locationRepository = resolve(ReceptacleForInventoryItemsRepository::class);
 
     $locationRepository->add(
-        FactoryForTests::create(InventoryLocation::class)->withArgs(
+        FactoryForTests::create(ReceptacleForInventoryItems::class)->withArgs(
             idAndTenant: new IdAndTenant(id: null, tenantId: 1),
-            referenceTypeId: InventoryLocationReferenceType::WAREHOUSE_LOCATION,
+            referenceTypeId: ReceptacleForInventoryItemsReferenceType::WAREHOUSE_LOCATION,
             referenceId: '200',
             heldInventoryIsAvailable: true,
         ),
     );
 
     $locationRepository->add(
-        FactoryForTests::create(InventoryLocation::class)->withArgs(
+        FactoryForTests::create(ReceptacleForInventoryItems::class)->withArgs(
             idAndTenant: new IdAndTenant(id: null, tenantId: 2),
-            referenceTypeId: InventoryLocationReferenceType::ORDER_PICKING_CONTAINER,
+            referenceTypeId: ReceptacleForInventoryItemsReferenceType::ORDER_PICKING_CONTAINER,
             referenceId: '201',
             heldInventoryIsAvailable: true,
         ),

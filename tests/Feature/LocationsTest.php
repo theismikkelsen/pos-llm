@@ -1,22 +1,22 @@
 <?php
 
 use App\Domain\Inventory\IdAndTenant;
-use App\Domain\Inventory\InventoryLocation;
-use App\Domain\Inventory\InventoryLocationReferenceType;
+use App\Domain\Inventory\ReceptacleForInventoryItems;
+use App\Domain\Inventory\ReceptacleForInventoryItemsReferenceType;
 use App\Models\User;
-use App\Repositories\InventoryLocationRepository;
+use App\Repositories\ReceptacleForInventoryItemsRepository;
 use CodeTooling\Testing\FactoryForTests;
 
 test('authenticated users can visit the locations page', function () {
     // Arrange
     $this->actingAs(User::factory()->create());
 
-    $repository = resolve(InventoryLocationRepository::class);
+    $repository = resolve(ReceptacleForInventoryItemsRepository::class);
 
     $repository->add(
-        FactoryForTests::create(InventoryLocation::class)->withArgs(
+        FactoryForTests::create(ReceptacleForInventoryItems::class)->withArgs(
             idAndTenant: new IdAndTenant(id: null, tenantId: 1),
-            referenceTypeId: InventoryLocationReferenceType::WAREHOUSE_LOCATION,
+            referenceTypeId: ReceptacleForInventoryItemsReferenceType::WAREHOUSE_LOCATION,
             referenceId: '90210',
             heldInventoryIsAvailable: true,
         ),
@@ -46,7 +46,7 @@ test('authenticated users can create a location', function () {
     // Arrange
     $this->actingAs(User::factory()->create());
 
-    $repository = resolve(InventoryLocationRepository::class);
+    $repository = resolve(ReceptacleForInventoryItemsRepository::class);
 
     // Act
     $response = $this->post('/locations', [
@@ -59,10 +59,10 @@ test('authenticated users can create a location', function () {
 
     $storedLocation = $repository
         ->listByTenantId(1)
-        ->first(fn (InventoryLocation $location) => $location->referenceId === '555');
+        ->first(fn (ReceptacleForInventoryItems $location) => $location->referenceId === '555');
 
     expect($storedLocation)->not->toBeNull();
-    expect($storedLocation?->referenceTypeId)->toBe(InventoryLocationReferenceType::WAREHOUSE_LOCATION);
+    expect($storedLocation?->referenceTypeId)->toBe(ReceptacleForInventoryItemsReferenceType::WAREHOUSE_LOCATION);
     expect($storedLocation?->heldInventoryIsAvailable)->toBeTrue();
 });
 
@@ -70,12 +70,12 @@ test('reference id must be unique for a tenant and reference type', function () 
     // Arrange
     $this->actingAs(User::factory()->create());
 
-    $repository = resolve(InventoryLocationRepository::class);
+    $repository = resolve(ReceptacleForInventoryItemsRepository::class);
 
     $repository->add(
-        FactoryForTests::create(InventoryLocation::class)->withArgs(
+        FactoryForTests::create(ReceptacleForInventoryItems::class)->withArgs(
             idAndTenant: new IdAndTenant(id: null, tenantId: 1),
-            referenceTypeId: InventoryLocationReferenceType::WAREHOUSE_LOCATION,
+            referenceTypeId: ReceptacleForInventoryItemsReferenceType::WAREHOUSE_LOCATION,
             referenceId: 'A-001',
         ),
     );
