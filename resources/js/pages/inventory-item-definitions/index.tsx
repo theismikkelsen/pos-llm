@@ -19,7 +19,7 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-export default function InventoryItemDefinitions({
+export default function Products({
     items,
 }: {
     items: ProductData[];

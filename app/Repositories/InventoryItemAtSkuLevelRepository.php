@@ -3,23 +3,23 @@
 namespace App\Repositories;
 
 use App\Domain\Inventory\IdAndTenant;
-use App\Domain\Inventory\InventoryItemDefinition;
+use App\Domain\Inventory\InventoryItemAtSkuLevel;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
-final class InventoryItemDefinitionRepository
+final class InventoryItemAtSkuLevelRepository
 {
-    public function add(InventoryItemDefinition $definition): int
+    public function add(InventoryItemAtSkuLevel $definition): int
     {
-        return DB::table('inventory_item_definitions')->insertGetId(
+        return DB::table('inventory_items_at_sku_level')->insertGetId(
             self::mapToPersistence($definition),
         );
     }
 
-    public function getById(int $tenantId, int $id): InventoryItemDefinition
+    public function getById(int $tenantId, int $id): InventoryItemAtSkuLevel
     {
-        $dbRow = DB::table('inventory_item_definitions')
+        $dbRow = DB::table('inventory_items_at_sku_level')
             ->where([
                 'tenant_id' => $tenantId,
                 'id' => $id,
@@ -30,22 +30,22 @@ final class InventoryItemDefinitionRepository
     }
 
     /**
-     * @return Collection<int, InventoryItemDefinition>
+     * @return Collection<int, InventoryItemAtSkuLevel>
      */
     public function listByTenantId(int $tenantId): Collection
     {
-        return DB::table('inventory_item_definitions')
+        return DB::table('inventory_items_at_sku_level')
             ->where('tenant_id', $tenantId)
             ->orderBy('name')
             ->get()
-            ->map(static function (object $dbRow): InventoryItemDefinition {
+            ->map(static function (object $dbRow): InventoryItemAtSkuLevel {
                 return self::mapToDomain($dbRow);
             });
     }
 
     public function existsBySkuId(int $tenantId, string $skuId): bool
     {
-        return DB::table('inventory_item_definitions')
+        return DB::table('inventory_items_at_sku_level')
             ->where([
                 'tenant_id' => $tenantId,
                 'sku_id' => $skuId,
@@ -53,9 +53,9 @@ final class InventoryItemDefinitionRepository
             ->exists();
     }
 
-    private static function mapToDomain(object $dbRow): InventoryItemDefinition
+    private static function mapToDomain(object $dbRow): InventoryItemAtSkuLevel
     {
-        return new InventoryItemDefinition(
+        return new InventoryItemAtSkuLevel(
             idAndTenant: new IdAndTenant(id: $dbRow->id, tenantId: $dbRow->tenant_id), // @phpstan-ignore property.notFound, property.notFound
             skuId: $dbRow->sku_id, // @phpstan-ignore property.notFound
             name: $dbRow->name, // @phpstan-ignore property.notFound
@@ -68,7 +68,7 @@ final class InventoryItemDefinitionRepository
     /**
      * @return array<string, bool|int|string|CarbonImmutable>
      */
-    private static function mapToPersistence(InventoryItemDefinition $definition): array
+    private static function mapToPersistence(InventoryItemAtSkuLevel $definition): array
     {
         return [
             'id' => $definition->idAndTenant->id,

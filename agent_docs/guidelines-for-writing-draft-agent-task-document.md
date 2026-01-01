@@ -10,21 +10,21 @@
 ```
 make a draft task for this feature:
 - add method on inventory movement ledger should verify that item instance and inventory locations exists.
-- requires some other work first, InventoryItemInstance and InventorLocation need to be implemented
+- requires some other work first, InventoryItemAtLowestDistinctLevel and InventorLocation need to be implemented
 
 ```
 
 ### Draft Agent Task Document Created By Agent 
 ```
-The add-method on InventoryMovementLedger should verify that inventoryItemInstance and inventoryLocations exist. 
+The add-method on InventoryMovementLedger should verify that inventoryItemAtLowestDistinctLevel and inventoryLocations exist. 
 
-This requires some upstream work first, to implement classes for InventoryItemInstance and InventorLocation (implement only methods required to support change to InventoryMovementLedger and required for tests).
+This requires some upstream work first, to implement classes for InventoryItemAtLowestDistinctLevel and InventorLocation (implement only methods required to support change to InventoryMovementLedger and required for tests).
 
 ## Implementation Details
 
 ### Testing
 
-- InventoryItemInstanceRepositoryTest: Implement as integration test.
+- InventoryItemAtLowestDistinctLevelRepositoryTest: Implement as integration test.
 - InventorLocationRepositoryTest: Implement as integration test.
 
 ### Frontend
@@ -33,8 +33,8 @@ This requires some upstream work first, to implement classes for InventoryItemIn
 
 ### Backend
 
-- InventoryItemInstance: Implement as entity class.
-- InventoryItemInstanceRepository: Implement as repository class.
+- InventoryItemAtLowestDistinctLevel: Implement as entity class.
+- InventoryItemAtLowestDistinctLevelRepository: Implement as repository class.
 - InventorLocation: Implement as entity class.
 - InventorLocationRepository: Implement as repository class.
 

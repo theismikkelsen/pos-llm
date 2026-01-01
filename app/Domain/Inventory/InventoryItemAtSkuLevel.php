@@ -7,7 +7,7 @@ use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 #[TypeScript]
-final class InventoryItemDefinition extends Data
+final class InventoryItemAtSkuLevel extends Data
 {
     public function __construct(
         public readonly IdAndTenant $idAndTenant,

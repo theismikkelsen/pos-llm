@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/card';
 import { Head } from '@inertiajs/react';
 
-export default function InventoryItemDefinitionShow({
+export default function ProductsShow({
     item,
 }: {
     item: ProductData;

@@ -3,9 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Data\Products\ProductData;
-use App\Domain\Inventory\InventoryItemDefinition;
+use App\Domain\Inventory\InventoryItemAtSkuLevel;
 use App\Domain\Inventory\IdAndTenant;
-use App\Repositories\InventoryItemDefinitionRepository;
+use App\Repositories\InventoryItemAtSkuLevelRepository;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -15,25 +15,25 @@ use Inertia\Response;
 
 final class ProductsController extends Controller
 {
-    public function index(InventoryItemDefinitionRepository $repository): Response
+    public function index(InventoryItemAtSkuLevelRepository $repository): Response
     {
         $tenantId = 1;
         $items = $repository->listByTenantId($tenantId);
 
         return Inertia::render('inventory-item-definitions/index', [
             'items' => $items
-                ->map(static fn (InventoryItemDefinition $item) => ProductData::fromInventoryItemDefinition($item)->toArray())
+                ->map(static fn (InventoryItemAtSkuLevel $item) => ProductData::fromInventoryItemAtSkuLevel($item)->toArray())
                 ->values(),
         ]);
     }
 
-    public function show(int $id, InventoryItemDefinitionRepository $inventoryItemDefinitionRepository): Response
+    public function show(int $id, InventoryItemAtSkuLevelRepository $inventoryItemAtSkuLevelRepository): Response
     {
         $tenantId = 1;
-        $item = $inventoryItemDefinitionRepository->getById($tenantId, $id);
+        $item = $inventoryItemAtSkuLevelRepository->getById($tenantId, $id);
 
         return Inertia::render('inventory-item-definitions/show', [
-            'item' => ProductData::fromInventoryItemDefinition($item)->toArray(),
+            'item' => ProductData::fromInventoryItemAtSkuLevel($item)->toArray(),
         ]);
     }
 
@@ -42,7 +42,7 @@ final class ProductsController extends Controller
         return Inertia::render('inventory-item-definitions/create');
     }
 
-    public function store(Request $request, InventoryItemDefinitionRepository $inventoryItemDefinitionRepository): RedirectResponse
+    public function store(Request $request, InventoryItemAtSkuLevelRepository $inventoryItemAtSkuLevelRepository): RedirectResponse
     {
         $tenantId = 1;
 
@@ -53,13 +53,13 @@ final class ProductsController extends Controller
             'is_serial_tracked' => ['required', 'boolean'],
         ]);
 
-        if ($inventoryItemDefinitionRepository->existsBySkuId($tenantId, $validated['sku_id'])) {
+        if ($inventoryItemAtSkuLevelRepository->existsBySkuId($tenantId, $validated['sku_id'])) {
             throw ValidationException::withMessages([
                 'sku_id' => 'This SKU is already in use.',
             ]);
         }
 
-        $inventoryItemDefinitionRepository->add(new InventoryItemDefinition(
+        $inventoryItemAtSkuLevelRepository->add(new InventoryItemAtSkuLevel(
             idAndTenant: new IdAndTenant(id: null, tenantId: $tenantId),
             skuId: $validated['sku_id'],
             name: $validated['name'],

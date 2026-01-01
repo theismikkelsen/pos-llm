@@ -2,7 +2,7 @@
 
 namespace App\Data\Products;
 
-use App\Domain\Inventory\InventoryItemDefinition;
+use App\Domain\Inventory\InventoryItemAtSkuLevel;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
@@ -18,7 +18,7 @@ final class ProductData extends Data
     ) {
     }
 
-    public static function fromInventoryItemDefinition(InventoryItemDefinition $item): self
+    public static function fromInventoryItemAtSkuLevel(InventoryItemAtSkuLevel $item): self
     {
         $id = $item->idAndTenant->id;
 

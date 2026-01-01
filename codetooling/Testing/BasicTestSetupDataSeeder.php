@@ -3,28 +3,28 @@
 namespace CodeTooling\Testing;
 
 use App\Domain\Inventory\IdAndTenant;
-use App\Domain\Inventory\InventoryItemDefinition;
-use App\Domain\Inventory\InventoryItemInstance;
+use App\Domain\Inventory\InventoryItemAtSkuLevel;
+use App\Domain\Inventory\InventoryItemAtLowestDistinctLevel;
 use App\Domain\Inventory\InventoryLocation;
 use App\Domain\Inventory\InventoryLocationReferenceType;
-use App\Repositories\InventoryItemDefinitionRepository;
-use App\Repositories\InventoryItemInstanceRepository;
+use App\Repositories\InventoryItemAtSkuLevelRepository;
+use App\Repositories\InventoryItemAtLowestDistinctLevelRepository;
 use App\Repositories\InventoryLocationRepository;
 use CodeTooling\Testing\FactoryForTests;
 
 class BasicTestSetupDataSeeder
 {
     private InventoryLocationRepository $locationRepository;
-    private InventoryItemDefinitionRepository $definitionRepository;
-    private InventoryItemInstanceRepository $instanceRepository;
+    private InventoryItemAtSkuLevelRepository $definitionRepository;
+    private InventoryItemAtLowestDistinctLevelRepository $instanceRepository;
 
     private function __construct(
         private readonly int $tenantId
     ) {
         // Resolve repositories once to keep the seeding loop clean
         $this->locationRepository = resolve(InventoryLocationRepository::class);
-        $this->definitionRepository = resolve(InventoryItemDefinitionRepository::class);
-        $this->instanceRepository = resolve(InventoryItemInstanceRepository::class);
+        $this->definitionRepository = resolve(InventoryItemAtSkuLevelRepository::class);
+        $this->instanceRepository = resolve(InventoryItemAtLowestDistinctLevelRepository::class);
     }
 
     /**
@@ -60,11 +60,11 @@ class BasicTestSetupDataSeeder
      *
      * @param int[] $ids List of specific IDs to assign to the definitions.
      */
-    public function seedInventoryItemDefinitions(array $ids): self
+    public function seedInventoryItemAtSkuLevels(array $ids): self
     {
         foreach ($ids as $id) {
             $this->definitionRepository->add(
-                FactoryForTests::create(InventoryItemDefinition::class)->withArgs(
+                FactoryForTests::create(InventoryItemAtSkuLevel::class)->withArgs(
                     idAndTenant: new IdAndTenant(id: $id, tenantId: $this->tenantId),
                     skuId: "SKU-ITEM-{$id}",
                 )
@@ -82,7 +82,7 @@ class BasicTestSetupDataSeeder
      *
      * @param int[] $ids List of IDs to use for both the Instance and the Parent Definition.
      */
-    public function seedInventoryItemInstancesWithIdsThatMirrorTheIdOfTheirParentInventoryItemDefinition(array $ids): self
+    public function seedInventoryItemAtLowestDistinctLevelWithIdsThatMirrorTheIdOfTheirParentInventoryItemAtSkuLevel(array $ids): self
     {
         foreach ($ids as $id) {
             // VERIFICATION STEP:
@@ -91,9 +91,9 @@ class BasicTestSetupDataSeeder
             $parentDefinition = $this->definitionRepository->getById(tenantId: $this->tenantId, id: $id);
 
             $this->instanceRepository->add(
-                FactoryForTests::create(InventoryItemInstance::class)->withArgs(
+                FactoryForTests::create(InventoryItemAtLowestDistinctLevel::class)->withArgs(
                     idAndTenant: new IdAndTenant(id: $id, tenantId: $this->tenantId),
-                    inventoryItemDefinitionId: $id, // Mirroring the ID
+                    inventoryItemAtSkuLevelId: $id, // Mirroring the ID
                 )
             );
         }

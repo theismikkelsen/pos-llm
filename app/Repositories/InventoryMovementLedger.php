@@ -12,16 +12,16 @@ use Illuminate\Support\Facades\DB;
 class InventoryMovementLedger
 {
     public function __construct(
-        private readonly InventoryItemInstanceRepository $inventoryItemInstanceRepository,
+        private readonly InventoryItemAtLowestDistinctLevelRepository $inventoryItemAtLowestDistinctLevelRepository,
         private readonly InventoryLocationRepository $inventoryLocationRepository,
     ) {
     }
 
     public function add(InventoryMovement $movement): int
     {
-        $this->inventoryItemInstanceRepository->getById(
+        $this->inventoryItemAtLowestDistinctLevelRepository->getById(
             tenantId: $movement->idAndTenant->tenantId,
-            id: $movement->inventoryItemInstanceId,
+            id: $movement->inventoryItemAtLowestDistinctLevelId,
         );
 
         $this->inventoryLocationRepository->getById(
@@ -41,7 +41,7 @@ class InventoryMovementLedger
 
             $this->adjustInventoryLevelProjection(
                 tenantId: $movement->idAndTenant->tenantId,
-                inventoryItemInstanceId: $movement->inventoryItemInstanceId,
+                inventoryItemAtLowestDistinctLevelId: $movement->inventoryItemAtLowestDistinctLevelId,
                 inventoryLocationId: $movement->inventoryLocationIdFrom,
                 quantityDelta: -$movement->quantityAdjustment,
                 timeUpdated: $movement->timeCreated,
@@ -49,7 +49,7 @@ class InventoryMovementLedger
 
             $this->adjustInventoryLevelProjection(
                 tenantId: $movement->idAndTenant->tenantId,
-                inventoryItemInstanceId: $movement->inventoryItemInstanceId,
+                inventoryItemAtLowestDistinctLevelId: $movement->inventoryItemAtLowestDistinctLevelId,
                 inventoryLocationId: $movement->inventoryLocationIdTo,
                 quantityDelta: $movement->quantityAdjustment,
                 timeUpdated: $movement->timeCreated,
@@ -74,38 +74,38 @@ class InventoryMovementLedger
             });
     }
 
-    public function projectInventoryLevelForInventoryItemInstance(int $tenantId, int $inventoryItemInstanceId): InventoryLevelsForInventoryInstanceItem
+    public function projectInventoryLevelForInventoryItemAtLowestDistinctLevel(int $tenantId, int $inventoryItemAtLowestDistinctLevelId): InventoryLevelsForInventoryInstanceItem
     {
-        $levelsByInstance = $this->projectLevelsForInventoryItemInstances(
+        $levelsByInstance = $this->projectLevelsForInventoryItemAtLowestDistinctLevel(
             tenantId: $tenantId,
-            inventoryItemInstanceIds: [$inventoryItemInstanceId],
+            inventoryItemAtLowestDistinctLevelIds: [$inventoryItemAtLowestDistinctLevelId],
         );
 
         return $levelsByInstance->first() ?? new InventoryLevelsForInventoryInstanceItem(
-            inventoryItemInstanceId: $inventoryItemInstanceId,
+            inventoryItemAtLowestDistinctLevelId: $inventoryItemAtLowestDistinctLevelId,
             inventoryLevels: collect(),
         );
     }
 
     /**
-     * @param array<int, int> $inventoryItemInstanceIds
+     * @param array<int, int> $inventoryItemAtLowestDistinctLevelIds
      * @return Collection<int, InventoryLevelsForInventoryInstanceItem>
      */
-    public function projectInventoryLevelForInventoryItemInstances(int $tenantId, array $inventoryItemInstanceIds): Collection
+    public function projectInventoryLevelsForInventoryItemsAtLowestDistinctLevel(int $tenantId, array $inventoryItemAtLowestDistinctLevelIds): Collection
     {
-        if ($inventoryItemInstanceIds === []) {
+        if ($inventoryItemAtLowestDistinctLevelIds === []) {
             return collect();
         }
 
-        $levelsByInstanceId = $this->projectLevelsForInventoryItemInstances(
+        $levelsByInstanceId = $this->projectLevelsForInventoryItemAtLowestDistinctLevel(
             tenantId: $tenantId,
-            inventoryItemInstanceIds: $inventoryItemInstanceIds,
+            inventoryItemAtLowestDistinctLevelIds: $inventoryItemAtLowestDistinctLevelIds,
         );
 
-        return collect($inventoryItemInstanceIds)
-            ->map(static function (int $inventoryItemInstanceId) use ($levelsByInstanceId): InventoryLevelsForInventoryInstanceItem {
-                return $levelsByInstanceId->get($inventoryItemInstanceId) ?? new InventoryLevelsForInventoryInstanceItem(
-                    inventoryItemInstanceId: $inventoryItemInstanceId,
+        return collect($inventoryItemAtLowestDistinctLevelIds)
+            ->map(static function (int $inventoryItemAtLowestDistinctLevelId) use ($levelsByInstanceId): InventoryLevelsForInventoryInstanceItem {
+                return $levelsByInstanceId->get($inventoryItemAtLowestDistinctLevelId) ?? new InventoryLevelsForInventoryInstanceItem(
+                    inventoryItemAtLowestDistinctLevelId: $inventoryItemAtLowestDistinctLevelId,
                     inventoryLevels: collect(),
                 );
             });
@@ -113,7 +113,7 @@ class InventoryMovementLedger
 
     private function adjustInventoryLevelProjection(
         int $tenantId,
-        int $inventoryItemInstanceId,
+        int $inventoryItemAtLowestDistinctLevelId,
         int $inventoryLocationId,
         int $quantityDelta,
         CarbonImmutable $timeUpdated,
@@ -126,13 +126,13 @@ class InventoryMovementLedger
             [
                 [
                     'tenant_id' => $tenantId,
-                    'inventory_item_instance_id' => $inventoryItemInstanceId,
+                    'inventory_item_at_lowest_distinct_level_id' => $inventoryItemAtLowestDistinctLevelId,
                     'inventory_location_id' => $inventoryLocationId,
                     'quantity' => $quantityDelta,
                     'time_updated' => $timeUpdated,
                 ],
             ],
-            ['tenant_id', 'inventory_item_instance_id', 'inventory_location_id'],
+            ['tenant_id', 'inventory_item_at_lowest_distinct_level_id', 'inventory_location_id'],
             [
                 'quantity' => DB::raw('quantity + VALUES(quantity)'),
                 'time_updated' => $timeUpdated,
@@ -141,34 +141,34 @@ class InventoryMovementLedger
     }
 
     /**
-     * @param array<int, int> $inventoryItemInstanceIds
+     * @param array<int, int> $inventoryItemAtLowestDistinctLevelIds
      * @return Collection<int, InventoryLevelsForInventoryInstanceItem>
      */
-    private function projectLevelsForInventoryItemInstances(int $tenantId, array $inventoryItemInstanceIds): Collection
+    private function projectLevelsForInventoryItemAtLowestDistinctLevel(int $tenantId, array $inventoryItemAtLowestDistinctLevelIds): Collection
     {
         $levelsByInstanceId = DB::table('inventory_level_projections')
             ->where('tenant_id', $tenantId)
-            ->whereIn('inventory_item_instance_id', $inventoryItemInstanceIds)
-            ->orderBy('inventory_item_instance_id')
+            ->whereIn('inventory_item_at_lowest_distinct_level_id', $inventoryItemAtLowestDistinctLevelIds)
+            ->orderBy('inventory_item_at_lowest_distinct_level_id')
             ->orderBy('inventory_location_id')
             ->get()
-            ->groupBy('inventory_item_instance_id')
+            ->groupBy('inventory_item_at_lowest_distinct_level_id')
             ->map(static function (Collection $rows): Collection {
                 return $rows->map(static function (object $dbRow): InventoryLevelForLocation {
                     return new InventoryLevelForLocation(
-                        inventoryItemInstanceId: $dbRow->inventory_item_instance_id,
+                        inventoryItemAtLowestDistinctLevelId: $dbRow->inventory_item_at_lowest_distinct_level_id,
                         inventoryLocationId: $dbRow->inventory_location_id,
                         quantity: $dbRow->quantity,
                     );
                 });
             });
 
-        return collect($inventoryItemInstanceIds)
-            ->mapWithKeys(static function (int $inventoryItemInstanceId) use ($levelsByInstanceId): array {
+        return collect($inventoryItemAtLowestDistinctLevelIds)
+            ->mapWithKeys(static function (int $inventoryItemAtLowestDistinctLevelId) use ($levelsByInstanceId): array {
                 return [
-                    $inventoryItemInstanceId => new InventoryLevelsForInventoryInstanceItem(
-                        inventoryItemInstanceId: $inventoryItemInstanceId,
-                        inventoryLevels: $levelsByInstanceId->get($inventoryItemInstanceId, collect()),
+                    $inventoryItemAtLowestDistinctLevelId => new InventoryLevelsForInventoryInstanceItem(
+                        inventoryItemAtLowestDistinctLevelId: $inventoryItemAtLowestDistinctLevelId,
+                        inventoryLevels: $levelsByInstanceId->get($inventoryItemAtLowestDistinctLevelId, collect()),
                     ),
                 ];
             });
@@ -178,7 +178,7 @@ class InventoryMovementLedger
     {
         return new InventoryMovement(
             idAndTenant: new \App\Domain\Inventory\IdAndTenant(id: $dbRow->id, tenantId: $dbRow->tenant_id), // @phpstan-ignore property.notFound, property.notFound
-            inventoryItemInstanceId: $dbRow->inventory_item_instance_id, // @phpstan-ignore property.notFound
+            inventoryItemAtLowestDistinctLevelId: $dbRow->inventory_item_at_lowest_distinct_level_id, // @phpstan-ignore property.notFound
             inventoryLocationIdFrom: $dbRow->inventory_location_id_from, // @phpstan-ignore property.notFound
             inventoryLocationIdTo: $dbRow->inventory_location_id_to, // @phpstan-ignore property.notFound
             quantityAdjustment: $dbRow->quantity_adjustment, // @phpstan-ignore property.notFound
@@ -194,7 +194,7 @@ class InventoryMovementLedger
         return [
             'id' => $movement->idAndTenant->id,
             'tenant_id' => $movement->idAndTenant->tenantId,
-            'inventory_item_instance_id' => $movement->inventoryItemInstanceId,
+            'inventory_item_at_lowest_distinct_level_id' => $movement->inventoryItemAtLowestDistinctLevelId,
             'inventory_location_id_from' => $movement->inventoryLocationIdFrom,
             'inventory_location_id_to' => $movement->inventoryLocationIdTo,
             'quantity_adjustment' => $movement->quantityAdjustment,

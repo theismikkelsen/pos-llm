@@ -40,7 +40,7 @@
   - Priorities: Using nuanced terms that can precisely express the operations and data of the application
   - Used in: Backend code, domain entities, repositories, etc.
 - Example of using both UI-first terminology and backend-first terminology correctly when implementing a feature
-  - Using the term *products* in user-facing text in the frontend. Using */products* as URI for the route. Naming the test *ProductsTest.php*. Naming the entity *InventoryItemDefinition* and the repository *InventoryItemDefinitionRepository*. Naming the controller *ProductController* and in the controller orchestrating usage of *InventoryItemDefinition* and *InventoryItemDefinitionRepository*. 
+  - Using the term *products* in user-facing text in the frontend. Using */products* as URI for the route. Naming the test *ProductsTest.php*. Naming the entity *InventoryItemAtSkuLevel* and the repository *InventoryItemAtSkuLevelRepository*. Naming the controller *ProductController* and in the controller orchestrating usage of *InventoryItemAtSkuLevel* and *InventoryItemAtSkuLevelRepository*. 
 
 ### Tech Stack
 

@@ -3,9 +3,9 @@
 namespace CodeTooling\Testing;
 
 use App\Domain\Inventory\IdAndTenant;
-use App\Domain\Inventory\InventoryItemInstance;
+use App\Domain\Inventory\InventoryItemAtLowestDistinctLevel;
 use App\Domain\Inventory\InventoryMovement;
-use App\Domain\Inventory\InventoryItemDefinition;
+use App\Domain\Inventory\InventoryItemAtSkuLevel;
 use App\Domain\Inventory\InventoryLocation;
 use App\Domain\Inventory\InventoryLocationReferenceType;
 use Carbon\CarbonImmutable;
@@ -20,7 +20,7 @@ class FactoryForTests
     public static function create(string $classFqn): mixed
     {
         return match ($classFqn) {
-            InventoryItemDefinition::class => new InventoryItemDefinition(
+            InventoryItemAtSkuLevel::class => new InventoryItemAtSkuLevel(
                 idAndTenant: new IdAndTenant(id: 1, tenantId: 1),
                 skuId: 'SKU-ITEM-1',
                 name: 'Name of Item 1',
@@ -30,15 +30,15 @@ class FactoryForTests
             ),
             InventoryMovement::class => new InventoryMovement(
                 idAndTenant: new IdAndTenant(id: NULL, tenantId: 1),
-                inventoryItemInstanceId: 1,
+                inventoryItemAtLowestDistinctLevelId: 1,
                 inventoryLocationIdFrom: 10,
                 inventoryLocationIdTo: 20,
                 quantityAdjustment: 5,
                 timeCreated: CarbonImmutable::now(),
             ),
-            InventoryItemInstance::class => new InventoryItemInstance(
+            InventoryItemAtLowestDistinctLevel::class => new InventoryItemAtLowestDistinctLevel(
                 idAndTenant: new IdAndTenant(id: 1, tenantId: 1),
-                inventoryItemDefinitionId: 1,
+                inventoryItemAtSkuLevelId: 1,
                 lotNumber: 'LOT-1',
                 serialNumber: 'SER-1',
             ),

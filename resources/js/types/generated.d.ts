@@ -17,7 +17,7 @@ isSerialTracked: boolean;
 }
 declare namespace App.Domain.Inventory {
 export type InventoryLocationReferenceType = 1 | 2;
-export type InventoryItemDefinition = {
+export type InventoryItemAtSkuLevel = {
 idAndTenant: any;
 skuId: string;
 name: string;

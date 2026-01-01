@@ -1,8 +1,8 @@
 <?php
 
-use App\Domain\Inventory\InventoryItemDefinition;
+use App\Domain\Inventory\InventoryItemAtSkuLevel;
 use App\Models\User;
-use App\Repositories\InventoryItemDefinitionRepository;
+use App\Repositories\InventoryItemAtSkuLevelRepository;
 use CodeTooling\Testing\FactoryForTests;
 
 test('authenticated users can visit the inventory item definitions page', function () {
@@ -22,10 +22,10 @@ test('authenticated users can visit an individual product page', function () {
     // Arrange
     $this->actingAs(User::factory()->create());
 
-    $repository = resolve(InventoryItemDefinitionRepository::class);
+    $repository = resolve(InventoryItemAtSkuLevelRepository::class);
 
     $itemId = $repository->add(
-        FactoryForTests::create(InventoryItemDefinition::class)->withArgs(name: 'Product A'),
+        FactoryForTests::create(InventoryItemAtSkuLevel::class)->withArgs(name: 'Product A'),
     );
 
     // Act
@@ -54,7 +54,7 @@ test('authenticated users can create a product', function () {
     // Arrange
     $this->actingAs(User::factory()->create());
 
-    $repository = resolve(InventoryItemDefinitionRepository::class);
+    $repository = resolve(InventoryItemAtSkuLevelRepository::class);
 
     // Act
     $response = $this->post('/products', [
@@ -69,7 +69,7 @@ test('authenticated users can create a product', function () {
 
     $createdProduct = $repository
         ->listByTenantId(1)
-        ->first(fn (InventoryItemDefinition $product) => $product->skuId === 'SKU-NEW-1');
+        ->first(fn (InventoryItemAtSkuLevel $product) => $product->skuId === 'SKU-NEW-1');
 
     expect($createdProduct)->not->toBeNull();
     expect($createdProduct?->name)->toBe('Product New');
