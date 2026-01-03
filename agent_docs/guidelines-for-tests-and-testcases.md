@@ -5,6 +5,7 @@
 ## Data Specificity
 
 - Use `\CodeTooling\FactoryForTests` to generate domain entities. Use default factory data whenever possible; use the `withArgs` method for modifications only when strictly necessary.
+- For feature and browser tests, prefer `\CodeTooling\Testing\BasicTestSetupDataSeeder` to seed standard inventory and locations before layering in scenario-specific data.
 - Define what you assert; default the rest. Any value used in an assertion must be explicitly defined in the setup. Never assert against hidden factory defaults.
 - Reduce Noise. Omit attributes irrelevant to the test scenario. Let the factory handle defaults for non-essential data to keep tests focused.
 
@@ -28,38 +29,13 @@
 - Do not modify or remove assertions or test cases due to failure unless the original assumptions no longer reflect how the system should function.
 - Update test cases to align with current behavior when logic changes, and only remove them entirely if the feature being tested is decommissioned.
 
-# Guidelines For Test And Testcases
-
-- Laravel is used for all automated testing.
-- When writing tests, use `\CodeTooling\FactoryForTests` for making domain entities, instead of creating them manually in each test. Use the object with default-data from the factory without changing the default data if at all possible. Only change data using the entity's `withArgs`-method to change data on the entity if strictly necessary.
-- Data Specificity
-  - **Define what you assert; default the rest.** If a value is used in an assertion (e.g., assertSee('Item A')), it must be explicitly defined in the setup. Never assert against hidden factory defaults.
-  - **Reduce Noise.** Do not manually define attributes irrelevant to the test scenario. Let the Factory handle valid defaults for all non-essential data to keep the test readable and focused.
-- Test for this application are divided into three categories:
-  - Feature tests (`tests/Feature`): Feature tests may test a larger portion of the code, including how several objects interact with each other or even a full HTTP request to a JSON endpoint. Generally, most of the tests should be feature tests. These types of tests provide the most confidence that the system as a whole is functioning as intended.
-  - Integration tests (`tests/Integration`)
-  - Unit tests (`tests/Unit`): Unit tests are tests that focus on a very small, isolated portion of your code (typically a single class). Tests within the "Unit" test directory do not boot the Laravel application and therefore are unable to access the application's database or other framework services.
-
-## Interaction With Database In Tests
-
-- Perform database setup and assertions through the same dedicated classes for database interactions (e.g. `Repository` or `Ledger` classes) that the application uses, rather than direct database access. Implement missing methods in these classes when required for testing, following existing naming and architectural patterns for this type of classes.
-- In tests, unlike in the application code, it allowed to hardcode ids of objects added through repositories in the test-setup, instead of letting the database auto-increment the id, as this increases the readability of the test.
-
-## Testing Tenant Isolation
-
-- Do not test tenant isolation within every test case. Instead, create dedicated test cases specifically for isolation verification. Place these tests at the end of the relevant test file.
-
-## Modifying Or Removing Assertions Or Testcases In Response To A Test Failing
-
-- Do not modify or remove assertions or test cases due to failure unless the original assumptions no longer reflect how the system should function.
-- Update test cases to align with current behavior when logic changes, and only remove them entirely if the feature being tested is decommissioned.
-
 ## Feature tests
 
 ### Guidelines for feature tests
 
 - Use hardcoded string paths instead of the route() helper in test assertions (i.e. `$this->get("/authors/$authorId")`).
 - Use regular Laravel assertions (`assertSee`, etc.) instead of Inertia-specific assertions (`assertInertia`, etc.) unless strictly necessary.
+- Use `BasicTestSetupDataSeeder` to establish base data before adding test-specific entities.
 
 ### Idiomatic, Generic Example Of How A Feature Test Should Be Organized
 

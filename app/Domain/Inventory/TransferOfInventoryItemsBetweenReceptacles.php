@@ -5,7 +5,7 @@ namespace App\Domain\Inventory;
 use Carbon\CarbonImmutable;
 use Spatie\LaravelData\Data;
 
-class TransferOfInventoryItemsBetweenReceptacles extends Data
+class TransferOfInventoryItemsBetweenReceptacles
 {
     public function __construct(
         public readonly IdAndTenant $idAndTenant,

@@ -19,14 +19,8 @@ final class LocationData extends Data
 
     public static function fromReceptacleForInventoryItems(ReceptacleForInventoryItems $location): self
     {
-        $id = $location->idAndTenant->id;
-
-        if ($id === null) {
-            throw new \RuntimeException('Location id missing.');
-        }
-
         return new self(
-            id: $id,
+            id: $location->idAndTenant->id,
             referenceTypeId: $location->referenceTypeId->value,
             referenceId: $location->referenceId,
             heldInventoryIsAvailable: $location->heldInventoryIsAvailable,

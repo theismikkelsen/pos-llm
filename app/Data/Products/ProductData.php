@@ -20,14 +20,8 @@ final class ProductData extends Data
 
     public static function fromInventoryItemAtSkuLevel(InventoryItemAtSkuLevel $item): self
     {
-        $id = $item->idAndTenant->id;
-
-        if ($id === null) {
-            throw new \RuntimeException('Product id missing.');
-        }
-
         return new self(
-            id: $id,
+            id: $item->idAndTenant->id,
             skuId: $item->skuId,
             name: $item->name,
             isLotTracked: $item->isLotTracked,

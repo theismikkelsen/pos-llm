@@ -81,7 +81,7 @@ class ArticleRepository
     private static function mapToPersistence(Article $article): array
     {
         return [
-            'id' => $article->idAndTenant->id,
+            'id' => $article->idAndTenant->idNullable,
             'tenant_id' => $article->idAndTenant->tenantId,
             'author_id' => $article->authorId,
             'title' => $article->title,

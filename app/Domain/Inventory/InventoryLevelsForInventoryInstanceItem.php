@@ -5,7 +5,7 @@ namespace App\Domain\Inventory;
 use Illuminate\Support\Collection;
 use Spatie\LaravelData\Data;
 
-class InventoryLevelsForInventoryInstanceItem extends Data
+class InventoryLevelsForInventoryInstanceItem
 {
     /**
      * @param Collection<int, InventoryLevelForReceptacle> $inventoryLevels

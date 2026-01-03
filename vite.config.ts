@@ -3,6 +3,7 @@ import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import laravel from 'laravel-vite-plugin';
 import { defineConfig } from 'vite';
+import { watch } from 'vite-plugin-watch';
 
 export default defineConfig({
     plugins: [
@@ -19,6 +20,10 @@ export default defineConfig({
         tailwindcss(),
         wayfinder({
             formVariants: true,
+        }),
+        watch({
+            pattern: 'app/**/*.php',
+            command: 'composer run transform-types',
         }),
     ],
     esbuild: {

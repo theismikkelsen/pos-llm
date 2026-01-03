@@ -5,6 +5,7 @@ namespace App\Repositories;
 use App\Domain\Inventory\IdAndTenant;
 use App\Domain\Inventory\InventoryItemAtLowestDistinctLevel;
 use Carbon\CarbonImmutable;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 final class InventoryItemAtLowestDistinctLevelRepository
@@ -32,6 +33,25 @@ final class InventoryItemAtLowestDistinctLevelRepository
         return self::mapToDomain($dbRow);
     }
 
+    /**
+     * @return Collection<int, InventoryItemAtLowestDistinctLevel>
+     */
+    public function findByInventoryItemAtSkuLevelId(int $tenantId, int $inventoryItemAtSkuLevelId): Collection
+    {
+        return DB::table('inventory_items_at_lowest_distinct_level')
+            ->where([
+                'tenant_id' => $tenantId,
+                'inventory_item_at_sku_level_id' => $inventoryItemAtSkuLevelId,
+            ])
+            ->orderBy('lot_number')
+            ->orderBy('serial_number')
+            ->orderBy('id')
+            ->get()
+            ->map(static function (object $dbRow): InventoryItemAtLowestDistinctLevel {
+                return self::mapToDomain($dbRow);
+            });
+    }
+
     private static function mapToDomain(object $dbRow): InventoryItemAtLowestDistinctLevel
     {
         return new InventoryItemAtLowestDistinctLevel(
@@ -48,7 +68,7 @@ final class InventoryItemAtLowestDistinctLevelRepository
     private static function mapToPersistence(InventoryItemAtLowestDistinctLevel $instance): array
     {
         return [
-            'id' => $instance->idAndTenant->id,
+            'id' => $instance->idAndTenant->idNullable,
             'tenant_id' => $instance->idAndTenant->tenantId,
             'inventory_item_at_sku_level_id' => $instance->inventoryItemAtSkuLevelId,
             'lot_number' => $instance->lotNumber,

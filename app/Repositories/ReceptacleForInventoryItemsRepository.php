@@ -49,6 +49,29 @@ final class ReceptacleForInventoryItemsRepository
             });
     }
 
+    /**
+     * @param Collection<int, int> $ids
+     * @return Collection<int, ReceptacleForInventoryItems>
+     */
+    public function getMultipleById(int $tenantId, Collection $ids): Collection
+    {
+        if ($ids->isEmpty()) {
+            return collect();
+        }
+
+        return DB::table('receptacles_for_inventory_items')
+            ->where('tenant_id', $tenantId)
+            ->whereIn('id', $ids)
+            ->orderBy('reference_id')
+            ->get()
+            ->tap(function (Collection $results) use ($ids): void {
+                if ($ids->sort()->values()!=$results->pluck('id')->sort()->values()) {
+                    throw new \RuntimeException('Not all requested IDs were found: ' . $ids->diff($results->pluck('id'))->implode(', '));
+                }
+            })
+            ->map(fn(object $dbRow): ReceptacleForInventoryItems => self::mapToDomain($dbRow));
+    }
+
     public function existsByReference(
         int $tenantId,
         ReceptacleForInventoryItemsReferenceType $referenceType,
@@ -79,7 +102,7 @@ final class ReceptacleForInventoryItemsRepository
     private static function mapToPersistence(ReceptacleForInventoryItems $location): array
     {
         return [
-            'id' => $location->idAndTenant->id,
+            'id' => $location->idAndTenant->idNullable,
             'tenant_id' => $location->idAndTenant->tenantId,
             'held_inventory_is_available' => $location->heldInventoryIsAvailable,
             'reference_type_id' => $location->referenceTypeId->value,

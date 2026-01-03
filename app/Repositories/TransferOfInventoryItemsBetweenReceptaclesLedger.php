@@ -192,7 +192,7 @@ class TransferOfInventoryItemsBetweenReceptaclesLedger
     private static function mapToPersistence(TransferOfInventoryItemsBetweenReceptacles $movement): array
     {
         return [
-            'id' => $movement->idAndTenant->id,
+            'id' => $movement->idAndTenant->idNullable,
             'tenant_id' => $movement->idAndTenant->tenantId,
             'inventory_item_at_lowest_distinct_level_id' => $movement->inventoryItemAtLowestDistinctLevelId,
             'receptacle_for_inventory_item_id_from' => $movement->receptacleIdFrom,

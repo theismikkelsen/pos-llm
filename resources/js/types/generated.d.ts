@@ -14,15 +14,20 @@ name: string;
 isLotTracked: boolean;
 isSerialTracked: boolean;
 };
+export type ProductInventoryLevelGroupData = {
+groupValue: string;
+locations: Array<App.Data.Products.ProductInventoryLevelLocationData>;
+};
+export type ProductInventoryLevelLocationData = {
+locationName: string;
+quantity: number;
+};
+export type ProductInventoryLevelsData = {
+groupLabel: string | null;
+groups: Array<App.Data.Products.ProductInventoryLevelGroupData> | null;
+ungroupedLocations: Array<App.Data.Products.ProductInventoryLevelLocationData> | null;
+};
 }
 declare namespace App.Domain.Inventory {
 export type ReceptacleForInventoryItemsReferenceType = 1 | 2;
-export type InventoryItemAtSkuLevel = {
-idAndTenant: any;
-skuId: string;
-name: string;
-isLotTracked: boolean;
-isSerialTracked: boolean;
-createdAt: string;
-};
 }

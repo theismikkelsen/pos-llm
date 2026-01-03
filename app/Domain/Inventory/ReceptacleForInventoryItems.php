@@ -5,7 +5,7 @@ namespace App\Domain\Inventory;
 use Carbon\CarbonImmutable;
 use Spatie\LaravelData\Data;
 
-final class ReceptacleForInventoryItems extends Data
+final class ReceptacleForInventoryItems
 {
     public function __construct(
         public readonly IdAndTenant $idAndTenant,

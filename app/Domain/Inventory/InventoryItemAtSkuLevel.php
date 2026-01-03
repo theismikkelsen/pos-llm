@@ -6,8 +6,7 @@ use Carbon\CarbonImmutable;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
-#[TypeScript]
-final class InventoryItemAtSkuLevel extends Data
+final class InventoryItemAtSkuLevel
 {
     public function __construct(
         public readonly IdAndTenant $idAndTenant,

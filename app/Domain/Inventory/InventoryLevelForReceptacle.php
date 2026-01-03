@@ -4,7 +4,7 @@ namespace App\Domain\Inventory;
 
 use Spatie\LaravelData\Data;
 
-class InventoryLevelForReceptacle extends Data
+class InventoryLevelForReceptacle
 {
     public function __construct(
         public readonly int $inventoryItemAtLowestDistinctLevelId,

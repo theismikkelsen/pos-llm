@@ -71,7 +71,7 @@ final class InventoryItemAtSkuLevelRepository
     private static function mapToPersistence(InventoryItemAtSkuLevel $definition): array
     {
         return [
-            'id' => $definition->idAndTenant->id,
+            'id' => $definition->idAndTenant->idNullable,
             'tenant_id' => $definition->idAndTenant->tenantId,
             'sku_id' => $definition->skuId,
             'name' => $definition->name,

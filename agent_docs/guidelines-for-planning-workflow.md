@@ -3,7 +3,6 @@
 ## Purpose
 
 - Use a lightweight plan before implementation so the human operator can validate approach early.
-- Keep the plan detailed enough for review, but avoid low-level code specifics.
 - The plan is not a substitute for reading `AGENTS.md` and relevant `agent_docs/*` before executing the work.
 
 ## When To Create A Plan
