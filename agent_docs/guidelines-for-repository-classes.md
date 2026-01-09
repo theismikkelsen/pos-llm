@@ -16,16 +16,16 @@
 
 namespace App\Repositories;
 
-use App\Domain\Article;
+use App\Domain\Appointment;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
-class ArticleRepository	 
+class AppointmentRepository	 
 {
-    public function get(int $id): Article
+    public function get(int $id): Appointment
     {
-        $dbRow = DB::table('articles')
+        $dbRow = DB::table('appointments')
             ->where(['id' => $id])
             ->sole();
 
@@ -33,59 +33,59 @@ class ArticleRepository
     }
 
     /**
-     * @return Collection<int, Article>
+     * @return Collection<int, Appointment>
      */
     public function findAll(): Collection
     {
-        return DB::table('articles')
+        return DB::table('appointments')
             ->get()
             ->map(fn($dbRow) => self::mapToDomain($dbRow));
     }
 
     /**
-     * @return Collection<int, Article>
+     * @return Collection<int, Appointment>
      */
-    public function findByAuthor(int $authorId): Collection
+    public function findByPatient(int $patientId): Collection
     {
-        return DB::table('articles')
-            ->where('author_id', $authorId)
+        return DB::table('appointments')
+            ->where('patient_id', $patientId)
             ->get()
             ->map(fn($dbRow) => self::mapToDomain($dbRow));
     }
 
-    public function add(Article $article): int
+    public function add(Appointment $appointment): int
     {
-        return DB::table('articles')->insertGetId(self::mapToPersistence($article));
+        return DB::table('appointments')->insertGetId(self::mapToPersistence($appointment));
     }
 
-    public function update(Article $article): void
+    public function update(Appointment $appointment): void
     {
-        DB::table('articles')
-            ->where(['id' => $article->id])
-            ->update(self::mapToPersistence($article));
+        DB::table('appointments')
+            ->where(['id' => $appointment->id])
+            ->update(self::mapToPersistence($appointment));
     }
 
-    private static function mapToDomain(object $dbRow): Article
+    private static function mapToDomain(object $dbRow): Appointment
     {
-        return new Article(
+        return new Appointment(
             idAndTenant: new IdAndTenant(id: $dbRow->id, tenantId: $dbRow->tenant_id), // @phpstan-ignore property.notFound, property.notFound
-            authorId: $dbRow->author_id, // @phpstan-ignore property.notFound
-            title: $dbRow->title, // @phpstan-ignore property.notFound
-            publishedAt: $dbRow->published_at ? CarbonImmutable::createFromFormat('Y-m-d H:i:s', $dbRow->published_at) : NULL // @phpstan-ignore property.notFound
+            patientId: $dbRow->patient_id, // @phpstan-ignore property.notFound
+            scheduledAt: CarbonImmutable::createFromFormat('Y-m-d H:i:s', $dbRow->scheduled_at), // @phpstan-ignore property.notFound
+            reminderChannel: $dbRow->reminder_channel // @phpstan-ignore property.notFound
         );
     }
 
     /**
      * @return array<string, bool|int|string|CarbonImmutable>
      */
-    private static function mapToPersistence(Article $article): array
+    private static function mapToPersistence(Appointment $appointment): array
     {
         return [
-            'id' => $article->idAndTenant->idNullable,
-            'tenant_id' => $article->idAndTenant->tenantId,
-            'author_id' => $article->authorId,
-            'title' => $article->title,
-            'published_at' => $article->publishedAt?->format('Y-m-d H:i:s'),
+            'id' => $appointment->idAndTenant->idNullable,
+            'tenant_id' => $appointment->idAndTenant->tenantId,
+            'patient_id' => $appointment->patientId,
+            'scheduled_at' => $appointment->scheduledAt->format('Y-m-d H:i:s'),
+            'reminder_channel' => $appointment->reminderChannel,
         ];
     }
 }

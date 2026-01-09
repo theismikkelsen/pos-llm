@@ -37,7 +37,7 @@
 ## Template
 
 ```md
-# Plan: {short description}
+# Task For Agent: {short description}
 
 ## Goal
 - ...
@@ -80,91 +80,46 @@
 
 ## Example
 
-### Minor Implementation Example
-
 ```md
-# Plan: Add location label to products list
+# Task For Agent: Implement feature warning user on duplicate patient name during registration
 
 ## Goal
-- Show the primary location label next to each product in the list.
+- When registering a new patient, warn if another patient with the same name already exists and require confirmation to proceed.
 
 ## Assumptions
-- Location is stored on InventoryItemAtSkuLevel as `primaryLocationLabel`.
+- Patient name is stored on PatientProfile as `fullName`.
+- The registration form can display a confirmation prompt before final submission.
 
 ## Open Questions
-- None.
+- Should the duplicate check be exact match only, or case-insensitive and normalized?
 
 ## Plan (staged)
-### Stage 1 - Backend data shape
-- Extend repository mapping to include location label.
+### Stage 1 - Backend duplicate check
+- Add a repository method to find existing patient names for the tenant.
   - New/changed items (classes, methods, routes, files):
-    - InventoryItemAtSkuLevelRepository::mapToDomain
+    - PatientProfileRepository::existsWithFullName
 
-### Stage 2 - Frontend rendering
-- Render the new column in the products list table.
+### Stage 2 - Controller flow
+- When handling patient registration, check for duplicates and pass a flag to the form flow.
   - New/changed items (classes, methods, routes, files):
-    - resources/js/Pages/products/index.tsx (add column)
+    - PatientController::store (or registration action)
+    - routes/web.php (registration route if new)
+
+### Stage 3 - Frontend confirmation
+- If a duplicate exists, prompt the user to confirm they intend to create a patient with the same name.
+  - New/changed items (classes, methods, routes, files):
+    - resources/js/Pages/patients/create.tsx (confirmation prompt)
 
 ## Impacted Areas
-- Backend: repository mapping.
-- Frontend: products list page.
+- Backend: repository, controller.
+- Frontend: registration page.
 - Database: none.
-- Tests: update existing feature test for products list.
+- Tests: registration feature test for duplicate name confirmation.
 
 ## Verification
 - php artisan test
-- vendor/bin/phpstan analyse app
+- vendor\bin\phpstan
 
 ## Out Of Scope
-- Location edit UI.
-```
-
-### Major Implementation Example
-
-```md
-# Plan: Add products list page
-
-## Goal
-- Add a basic products list page backed by the inventory SKU repository.
-
-## Assumptions
-- Products map to InventoryItemAtSkuLevel in the domain.
-- The current UI uses Inertia and shadcn tables.
-
-## Open Questions
-- Should the list include inactive SKUs?
-
-## Plan (staged)
-### Stage 1 - Backend data access
-- Add `findAllForTenant` to InventoryItemAtSkuLevelRepository.
-- Map DB rows to domain entities with explicit tenant scoping.
-  - New/changed items (classes, methods, routes, files):
-    - InventoryItemAtSkuLevelRepository::findAllForTenant
-    - InventoryItemAtSkuLevelRepository::mapToDomain
-
-### Stage 2 - Controller and route
-- Add `/products` route with `whereNumber` constraints as needed.
-- Render an Inertia page from ProductController with mapped data.
-  - New/changed items (classes, methods, routes, files):
-    - ProductController::index
-    - routes/web.php (products index route)
-
-### Stage 3 - Frontend page
-- Add a `resources/js/Pages/products/index.tsx` page with a shadcn Table.
-- Use generated routes rather than hardcoded URLs.
-  - New/changed items (classes, methods, routes, files):
-    - resources/js/Pages/products/index.tsx (new page)
-
-## Impacted Areas
-- Backend: repository, controller, route.
-- Frontend: Inertia page.
-- Database: none.
-- Tests: feature test for products list.
-
-## Verification
-- php artisan test
-- vendor/bin/phpstan analyse app
-
-## Out Of Scope
-- Product detail page.
+- Insurance provider edit UI.
 ```

@@ -8,7 +8,7 @@
 
 ## Routes
 
-- Use UI-first terminology in paths, names, controllers, and pages (e.g. `/products`, `ProductsController`, `inventory-item-definitions/show` page).
+- Use UI-first terminology in paths, names, controllers, and pages (e.g. `/patients`, `PatientsController`, `patients/show` page).
 - Name routes consistently (`products.index`, `products.show`, etc.).
 - Use route parameter constraints (`whereNumber`, `whereAlpha`, etc.) when applicable.
 - Keep route definitions declarative; avoid closures for controller-driven pages.
@@ -36,8 +36,8 @@
 ## Example Route
 
 ```php
-Route::get('/products/{id}', [ProductsController::class, 'show'])
-    ->name('products.show')
+Route::get('/patients/{id}', [PatientsController::class, 'show'])
+    ->name('patients.show')
     ->whereNumber('id');
 ```
 
@@ -48,26 +48,26 @@ Route::get('/products/{id}', [ProductsController::class, 'show'])
 
 namespace App\Http\Controllers;
 
-use App\Data\Products\ProductData;
-use App\Domain\Inventory\InventoryItemAtSkuLevel;
-use App\Repositories\InventoryItemAtSkuLevelRepository;
+use App\Data\Patients\PatientData;
+use App\Domain\PatientProfile;
+use App\Repositories\PatientProfileRepository;
 use Inertia\Inertia;
 use Inertia\Response;
 
-final class ProductsController extends Controller
+final class PatientsController extends Controller
 {
     public function __construct(
-        private readonly InventoryItemAtSkuLevelRepository $inventoryItemAtSkuLevelRepository,
+        private readonly PatientProfileRepository $patientProfileRepository,
     ) {
     }
 
     public function show(int $id): Response
     {
         $tenantId = 1;
-        $item = $this->inventoryItemAtSkuLevelRepository->getById($tenantId, $id);
+        $patient = $this->patientProfileRepository->getById($tenantId, $id);
 
-        return Inertia::render('inventory-item-definitions/show', [
-            'item' => ProductData::fromInventoryItemAtSkuLevel($item)->toArray(),
+        return Inertia::render('patients/show', [
+            'patient' => PatientData::fromPatientProfile($patient)->toArray(),
         ]);
     }
 }

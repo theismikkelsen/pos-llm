@@ -2,7 +2,6 @@
 
 ## General Principles For How The Agent Should Behave
 
-- Guidelines from this document and documents in `agent_docs/*` takes precedence over patterns that can be observed in the existing code.
 - Use the commands `php artisan test` and `vendor\bin\phpstan`, both during and at the end of tasks involving changes to the codebase, to check whether your changes caused unforeseen errors.
 
 ## Further Guidelines That The Agent Must Read If Relevant To The Current Task
@@ -16,6 +15,11 @@
 - `agent_docs/guidelines-for-shadcn-components.md`
 - `agent_docs/guidelines-for-routes-and-controller-classes.md`
 - `agent_docs/guidelines-for-planning-workflow.md`
+
+## About `AGENTS.md` and `agent_docs/*`
+
+- Guidelines from `AGENTS.md` and documents in `agent_docs/*` takes precedence over patterns that can be observed in the existing code.
+- Code examples in `AGENTS.md` and `agent_docs/*` use a fictitious Medical Practice Management Software domain so the agent can learn patterns rather than copying WMS terms or structures.
 
 ## About This Codebase
 

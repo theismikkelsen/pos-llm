@@ -43,43 +43,45 @@
 <?php
 
 use App\Models\User;
-use App\Repositories\AuthorRepository;
+use App\Repositories\PatientProfileRepository;
 use CodeTooling\Testing\FactoryForTests;
-use App\Domain\Author;
+use App\Domain\PatientProfile;
 
 beforeEach(function () {
-    $this->authorRepository = resolve(AuthorRepository::class);
+    $this->patientProfileRepository = resolve(PatientProfileRepository::class);
 });
 
-test('authenticated users can visit the page with list of authors', function () {
+test('authenticated users can visit the page with list of patients', function () {
     // Arrange
     $this->actingAs(User::factory()->create());
     
-    $repository->add(FactoryForTests::create(Author::class)->withArgs(id: 1, name: 'Name of Author A'));
-    $repository->add(FactoryForTests::create(Author::class)->withArgs(id: 2, name: 'Name of Author B'));
+    $this->patientProfileRepository->add(FactoryForTests::create(PatientProfile::class)->withArgs(id: 1, fullName: 'Name of Patient A'));
+    $this->patientProfileRepository->add(FactoryForTests::create(PatientProfile::class)->withArgs(id: 2, fullName: 'Name of Patient B'));
 
     // Act
-    $respons = $this->get("/authors");
+    $response = $this->get("/patients");
     
     // Assert
+    $response
         ->assertOk()
-        ->assertSee('Name of Author A');
-        ->assertSee('Name of Author B');
-    );
+        ->assertSee('Name of Patient A')
+        ->assertSee('Name of Patient B');
 });
 
-test('authenticated users can visit an individual author\'s page', function () {
+test('authenticated users can visit an individual patient\'s page', function () {
     // Arrange
     $this->actingAs(User::factory()->create());
 
-    $authorId = $repository->add(FactoryForTests::create(Author::class)->withArgs(id: 1, name: 'Name of Author A'));
+    $patientId = $this->patientProfileRepository->add(
+        FactoryForTests::create(PatientProfile::class)->withArgs(id: 1, fullName: 'Name of Patient A')
+    );
 
     // Act
-    $respons = $this->get("/authors/$authorId");
+    $response = $this->get("/patients/$patientId");
     
     // Assert
+    $response
         ->assertOk()
-        ->assertSee('Name of Author A');
-    );
+        ->assertSee('Name of Patient A');
 });
 ```
