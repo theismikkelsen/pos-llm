@@ -34,7 +34,6 @@
 ### Guidelines for feature tests
 
 - Use hardcoded string paths instead of the route() helper in test assertions (i.e. `$this->get("/authors/$authorId")`).
-- Use regular Laravel assertions (`assertSee`, etc.) instead of Inertia-specific assertions (`assertInertia`, etc.) unless strictly necessary.
 - Use `BasicTestSetupDataSeeder` to establish base data before adding test-specific entities.
 
 ### Idiomatic, Generic Example Of How A Feature Test Should Be Organized

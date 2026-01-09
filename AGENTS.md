@@ -15,6 +15,7 @@
 - `agent_docs/guidelines-for-shadcn-components.md`
 - `agent_docs/guidelines-for-routes-and-controller-classes.md`
 - `agent_docs/guidelines-for-planning-workflow.md`
+- `agent_docs/guidelines-for-feature-specification-document-workflow.md`
 
 ## About `AGENTS.md` and `agent_docs/*`
 
