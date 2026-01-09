@@ -111,6 +111,39 @@ class TransferOfInventoryItemsBetweenReceptaclesLedger
             });
     }
 
+    /**
+     * @param array<int, int> $inventoryItemAtSkuLevelIds
+     * @return Collection<int, int>
+     */
+    public function projectInventoryTotalsForSkuLevelItems(int $tenantId, array $inventoryItemAtSkuLevelIds): Collection
+    {
+        if ($inventoryItemAtSkuLevelIds === []) {
+            return collect();
+        }
+
+        $totalsBySkuId = DB::table('inventory_level_projections as projections')
+            ->join('inventory_items_at_lowest_distinct_level as items', function ($join) use ($tenantId): void {
+                $join->on('projections.inventory_item_at_lowest_distinct_level_id', '=', 'items.id')
+                    ->where('items.tenant_id', $tenantId);
+            })
+            ->where('projections.tenant_id', $tenantId)
+            ->whereIn('items.inventory_item_at_sku_level_id', $inventoryItemAtSkuLevelIds)
+            ->groupBy('items.inventory_item_at_sku_level_id')
+            ->select(
+                'items.inventory_item_at_sku_level_id as sku_level_id',
+                DB::raw('SUM(projections.quantity) as quantity'),
+            )
+            ->get()
+            ->mapWithKeys(static function (object $row): array {
+                return [(int) $row->sku_level_id => (int) $row->quantity];
+            });
+
+        return collect($inventoryItemAtSkuLevelIds)
+            ->mapWithKeys(static function (int $inventoryItemAtSkuLevelId) use ($totalsBySkuId): array {
+                return [$inventoryItemAtSkuLevelId => (int) $totalsBySkuId->get($inventoryItemAtSkuLevelId, 0)];
+            });
+    }
+
     private function adjustInventoryLevelProjection(
         int $tenantId,
         int $inventoryItemAtLowestDistinctLevelId,

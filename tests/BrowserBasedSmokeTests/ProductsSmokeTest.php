@@ -15,6 +15,7 @@ test('products index page has no smoke', function () {
     // Assert
     $page->assertNoSmoke('');
     $page->assertSee('Products');
+    $page->assertSee('Stock');
 });
 
 test('product create page has no smoke', function () {

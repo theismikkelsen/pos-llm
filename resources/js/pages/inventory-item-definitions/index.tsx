@@ -1,6 +1,6 @@
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
-import type { ProductData } from '@/types/generated';
+import type { ProductOverviewData } from '@/types/generated';
 import {
     Table,
     TableBody,
@@ -22,7 +22,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 export default function Products({
     items,
 }: {
-    items: ProductData[];
+    items: ProductOverviewData[];
 }) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -55,6 +55,9 @@ export default function Products({
                                     <TableHead className="px-4 py-2">
                                         Serial tracked
                                     </TableHead>
+                                    <TableHead className="px-4 py-2">
+                                        Stock
+                                    </TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -81,6 +84,9 @@ export default function Products({
                                             {item.isSerialTracked
                                                 ? 'Yes'
                                                 : 'No'}
+                                        </TableCell>
+                                        <TableCell className="px-4 py-2">
+                                            {item.stockQuantity}
                                         </TableCell>
                                     </TableRow>
                                 ))}

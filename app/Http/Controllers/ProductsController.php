@@ -6,6 +6,7 @@ use App\Data\Products\ProductData;
 use App\Data\Products\ProductInventoryLevelGroupData;
 use App\Data\Products\ProductInventoryLevelLocationData;
 use App\Data\Products\ProductInventoryLevelsData;
+use App\Data\Products\ProductOverviewData;
 use App\Domain\Inventory\InventoryItemAtSkuLevel;
 use App\Domain\Inventory\InventoryItemAtLowestDistinctLevel;
 use App\Domain\Inventory\InventoryLevelForReceptacle;
@@ -38,10 +39,20 @@ final class ProductsController extends Controller
     {
         $tenantId = 1;
         $items = $this->inventoryItemAtSkuLevelRepository->listByTenantId($tenantId);
+        $stockTotalsBySkuId = $this->transferOfInventoryItemsBetweenReceptaclesLedger->projectInventoryTotalsForSkuLevelItems(
+            tenantId: $tenantId,
+            inventoryItemAtSkuLevelIds: $items
+                ->map(fn(InventoryItemAtSkuLevel $item): int => $item->idAndTenant->id)
+                ->values()
+                ->all(),
+        );
 
         return Inertia::render('inventory-item-definitions/index', [
             'items' => $items
-                ->map(fn(InventoryItemAtSkuLevel $item) => ProductData::fromInventoryItemAtSkuLevel($item)->toArray())
+                ->map(fn(InventoryItemAtSkuLevel $item) => ProductOverviewData::fromInventoryItemAtSkuLevel(
+                    item: $item,
+                    stockQuantity: (int) $stockTotalsBySkuId->get($item->idAndTenant->id, 0),
+                )->toArray())
                 ->values(),
         ]);
     }

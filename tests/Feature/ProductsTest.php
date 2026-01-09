@@ -11,6 +11,7 @@ use App\Repositories\TransferOfInventoryItemsBetweenReceptaclesLedger;
 use CodeTooling\Testing\BasicTestSetupDataSeeder;
 use Carbon\CarbonImmutable;
 use CodeTooling\Testing\FactoryForTests;
+use Inertia\Testing\AssertableInertia as Assert;
 
 test('authenticated users can visit the inventory item definitions page', function () {
     // Arrange
@@ -23,6 +24,152 @@ test('authenticated users can visit the inventory item definitions page', functi
 
     // Assert
     $response->assertOk();
+});
+
+test('products index shows sku-level stock totals for different tracking modes', function () {
+    // Arrange
+    $this->actingAs(User::factory()->create());
+
+    $inventoryItemAtSkuLevelRepository = resolve(InventoryItemAtSkuLevelRepository::class);
+    $inventoryItemAtLowestDistinctLevelRepository = resolve(InventoryItemAtLowestDistinctLevelRepository::class);
+    $transferOfInventoryItemsBetweenReceptaclesLedger = resolve(TransferOfInventoryItemsBetweenReceptaclesLedger::class);
+
+    $receivingId = 10;
+    $locationId = 11;
+
+    BasicTestSetupDataSeeder::forTenant(id: 1)
+        ->seedLocations(ids: [$receivingId, $locationId]);
+
+    $nonTrackedProductId = $inventoryItemAtSkuLevelRepository->add(
+        FactoryForTests::create(InventoryItemAtSkuLevel::class)->withArgs(
+            idAndTenant: new IdAndTenant(id: 1, tenantId: 1),
+            name: 'Non tracked product',
+            skuId: 'SKU-NT-1',
+            isLotTracked: false,
+            isSerialTracked: false,
+        ),
+    );
+
+    $lotTrackedProductId = $inventoryItemAtSkuLevelRepository->add(
+        FactoryForTests::create(InventoryItemAtSkuLevel::class)->withArgs(
+            idAndTenant: new IdAndTenant(id: 2, tenantId: 1),
+            name: 'Lot tracked product',
+            skuId: 'SKU-LT-1',
+            isLotTracked: true,
+            isSerialTracked: false,
+        ),
+    );
+
+    $serialTrackedProductId = $inventoryItemAtSkuLevelRepository->add(
+        FactoryForTests::create(InventoryItemAtSkuLevel::class)->withArgs(
+            idAndTenant: new IdAndTenant(id: 3, tenantId: 1),
+            name: 'Serial tracked product',
+            skuId: 'SKU-ST-1',
+            isLotTracked: false,
+            isSerialTracked: true,
+        ),
+    );
+
+    $nonTrackedInstanceId = $inventoryItemAtLowestDistinctLevelRepository->add(
+        FactoryForTests::create(InventoryItemAtLowestDistinctLevel::class)->withArgs(
+            idAndTenant: new IdAndTenant(id: 101, tenantId: 1),
+            inventoryItemAtSkuLevelId: $nonTrackedProductId,
+            lotNumber: null,
+            serialNumber: null,
+        ),
+    );
+
+    $lotInstanceOneId = $inventoryItemAtLowestDistinctLevelRepository->add(
+        FactoryForTests::create(InventoryItemAtLowestDistinctLevel::class)->withArgs(
+            idAndTenant: new IdAndTenant(id: 201, tenantId: 1),
+            inventoryItemAtSkuLevelId: $lotTrackedProductId,
+            lotNumber: 'LOT-001',
+            serialNumber: null,
+        ),
+    );
+
+    $lotInstanceTwoId = $inventoryItemAtLowestDistinctLevelRepository->add(
+        FactoryForTests::create(InventoryItemAtLowestDistinctLevel::class)->withArgs(
+            idAndTenant: new IdAndTenant(id: 202, tenantId: 1),
+            inventoryItemAtSkuLevelId: $lotTrackedProductId,
+            lotNumber: 'LOT-002',
+            serialNumber: null,
+        ),
+    );
+
+    $serialInstanceOneId = $inventoryItemAtLowestDistinctLevelRepository->add(
+        FactoryForTests::create(InventoryItemAtLowestDistinctLevel::class)->withArgs(
+            idAndTenant: new IdAndTenant(id: 301, tenantId: 1),
+            inventoryItemAtSkuLevelId: $serialTrackedProductId,
+            lotNumber: null,
+            serialNumber: 'SER-001',
+        ),
+    );
+
+    $serialInstanceTwoId = $inventoryItemAtLowestDistinctLevelRepository->add(
+        FactoryForTests::create(InventoryItemAtLowestDistinctLevel::class)->withArgs(
+            idAndTenant: new IdAndTenant(id: 302, tenantId: 1),
+            inventoryItemAtSkuLevelId: $serialTrackedProductId,
+            lotNumber: null,
+            serialNumber: 'SER-002',
+        ),
+    );
+
+    $transfers = [
+        [$nonTrackedInstanceId, 5],
+        [$lotInstanceOneId, 4],
+        [$lotInstanceTwoId, 2],
+        [$serialInstanceOneId, 1],
+        [$serialInstanceTwoId, 1],
+    ];
+
+    foreach ($transfers as [$instanceId, $quantity]) {
+        $transferOfInventoryItemsBetweenReceptaclesLedger->add(
+            FactoryForTests::create(TransferOfInventoryItemsBetweenReceptacles::class)->withArgs(
+                idAndTenant: new IdAndTenant(id: null, tenantId: 1),
+                inventoryItemAtLowestDistinctLevelId: $instanceId,
+                receptacleIdFrom: $receivingId,
+                receptacleIdTo: $locationId,
+                quantityAdjustment: $quantity,
+                timeCreated: CarbonImmutable::now(),
+            ),
+        );
+    }
+
+    // Act
+    $response = $this->get('/products');
+
+    // Assert
+    $response
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('inventory-item-definitions/index')
+            ->has('items', 3)
+            ->where('items.0', [
+                'id' => $lotTrackedProductId,
+                'skuId' => 'SKU-LT-1',
+                'name' => 'Lot tracked product',
+                'isLotTracked' => true,
+                'isSerialTracked' => false,
+                'stockQuantity' => 0,
+            ])
+            ->where('items.1', [
+                'id' => $nonTrackedProductId,
+                'skuId' => 'SKU-NT-1',
+                'name' => 'Non tracked product',
+                'isLotTracked' => false,
+                'isSerialTracked' => false,
+                'stockQuantity' => 0,
+            ])
+            ->where('items.2', [
+                'id' => $serialTrackedProductId,
+                'skuId' => 'SKU-ST-1',
+                'name' => 'Serial tracked product',
+                'isLotTracked' => false,
+                'isSerialTracked' => true,
+                'stockQuantity' => 0,
+            ])
+        );
 });
 
 test('authenticated users can visit an individual product page', function () {

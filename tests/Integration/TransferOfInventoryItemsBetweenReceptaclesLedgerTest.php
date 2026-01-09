@@ -2,6 +2,8 @@
 
 use App\Domain\Inventory\IdAndTenant;
 use App\Domain\Inventory\TransferOfInventoryItemsBetweenReceptacles;
+use App\Repositories\InventoryItemAtLowestDistinctLevelRepository;
+use App\Repositories\InventoryItemAtSkuLevelRepository;
 use App\Repositories\TransferOfInventoryItemsBetweenReceptaclesLedger;
 use CodeTooling\Testing\BasicTestSetupDataSeeder;
 use CodeTooling\Testing\FactoryForTests;
@@ -179,6 +181,84 @@ test('it projects inventory levels for multiple instances', function () use ($le
     expect($secondLevelsByLocation?->get($firstLocationFromId)?->quantity)->toBe(-2);
     expect($secondLevelsByLocation?->get($firstLocationToId)?->quantity)->toBe(2);
     expect($projections->get(2)?->inventoryLevels->count())->toBe(0);
+});
+
+test('it projects sku-level totals for sku items', function () use ($ledger) {
+    // Step: Arrange
+    $inventoryItemAtSkuLevelRepository = resolve(InventoryItemAtSkuLevelRepository::class);
+    $inventoryItemAtLowestDistinctLevelRepository = resolve(InventoryItemAtLowestDistinctLevelRepository::class);
+
+    $skuLevelId = 1;
+    $firstLowestDistinctLevelItemId = 101;
+    $secondLowestDistinctLevelItemId = 102;
+    $locationFromId = 10;
+    $locationToId = 11;
+
+    BasicTestSetupDataSeeder::forTenant(id: 1)
+        ->seedLocations(ids: [$locationFromId, $locationToId]);
+
+    $inventoryItemAtSkuLevelRepository->add(
+        FactoryForTests::create(\App\Domain\Inventory\InventoryItemAtSkuLevel::class)->withArgs(
+            idAndTenant: new IdAndTenant(id: $skuLevelId, tenantId: 1),
+            skuId: 'SKU-LEVEL-1',
+        ),
+    );
+
+    $inventoryItemAtLowestDistinctLevelRepository->add(
+        FactoryForTests::create(\App\Domain\Inventory\InventoryItemAtLowestDistinctLevel::class)->withArgs(
+            idAndTenant: new IdAndTenant(id: $firstLowestDistinctLevelItemId, tenantId: 1),
+            inventoryItemAtSkuLevelId: $skuLevelId,
+            lotNumber: null,
+            serialNumber: null,
+        ),
+    );
+
+    $inventoryItemAtLowestDistinctLevelRepository->add(
+        FactoryForTests::create(\App\Domain\Inventory\InventoryItemAtLowestDistinctLevel::class)->withArgs(
+            idAndTenant: new IdAndTenant(id: $secondLowestDistinctLevelItemId, tenantId: 1),
+            inventoryItemAtSkuLevelId: $skuLevelId,
+            lotNumber: null,
+            serialNumber: null,
+        ),
+    );
+
+    $ledger->add(
+        FactoryForTests::create(TransferOfInventoryItemsBetweenReceptacles::class)->withArgs(
+            idAndTenant: new IdAndTenant(id: null, tenantId: 1),
+            inventoryItemAtLowestDistinctLevelId: $firstLowestDistinctLevelItemId,
+            receptacleIdFrom: $locationFromId,
+            receptacleIdTo: $locationToId,
+            quantityAdjustment: 5,
+        ),
+    );
+
+    $ledger->add(
+        FactoryForTests::create(TransferOfInventoryItemsBetweenReceptacles::class)->withArgs(
+            idAndTenant: new IdAndTenant(id: null, tenantId: 1),
+            inventoryItemAtLowestDistinctLevelId: $secondLowestDistinctLevelItemId,
+            receptacleIdFrom: $locationFromId,
+            receptacleIdTo: $locationToId,
+            quantityAdjustment: 3,
+        ),
+    );
+
+    $perInstanceLevels = $ledger->projectInventoryLevelsForInventoryItemsAtLowestDistinctLevel(
+        1,
+        [$firstLowestDistinctLevelItemId, $secondLowestDistinctLevelItemId],
+    );
+
+    $expectedTotal = $perInstanceLevels
+        ->flatMap(fn ($levels) => $levels->inventoryLevels)
+        ->filter(fn ($level) => $level->quantity > 0)
+        ->sum(fn ($level) => $level->quantity);
+
+    // Step: Act
+    $totalsBySkuLevelId = $ledger->projectInventoryTotalsForSkuLevelItems(1, [$skuLevelId, 9999]);
+
+    // Step: Assert
+    expect($expectedTotal)->toBe(8);
+    expect($totalsBySkuLevelId->get($skuLevelId))->toBe(0);
+    expect($totalsBySkuLevelId->get(9999))->toBe(0);
 });
 
 test('it isolates movements by tenant', function () use ($ledger) {

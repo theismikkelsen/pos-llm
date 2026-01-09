@@ -27,6 +27,14 @@ groupLabel: string | null;
 groups: Array<App.Data.Products.ProductInventoryLevelGroupData> | null;
 ungroupedLocations: Array<App.Data.Products.ProductInventoryLevelLocationData> | null;
 };
+export type ProductOverviewData = {
+id: number;
+skuId: string;
+name: string;
+isLotTracked: boolean;
+isSerialTracked: boolean;
+stockQuantity: number;
+};
 }
 declare namespace App.Domain.Inventory {
 export type ReceptacleForInventoryItemsReferenceType = 1 | 2;
