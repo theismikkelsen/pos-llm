@@ -17,6 +17,9 @@
         <testsuite name="BrowserBasedSmokeTests">
             <directory>tests/BrowserBasedSmokeTests</directory>
         </testsuite>
+        <testsuite name="Architecture">
+            <directory>tests/ArchitectureRulesTests</directory>
+        </testsuite>
     </testsuites>
     <source>
         <include>
