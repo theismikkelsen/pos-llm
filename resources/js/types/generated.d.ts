@@ -37,5 +37,5 @@ stockQuantity: number;
 };
 }
 declare namespace App.Domain.Inventory {
-export type ReceptacleForInventoryItemsReferenceType = 1 | 2;
+export type ReceptacleForInventoryItemsReferenceType = 1 | 2 | 3;
 }
