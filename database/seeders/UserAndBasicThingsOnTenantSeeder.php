@@ -39,13 +39,6 @@ final class UserAndBasicThingsOnTenantSeeder extends Seeder
             ],
         );
 
-        $outsideReceptacleId = $this->ensureReceptacle(
-            $receptacleForInventoryItemsRepository,
-            tenantId: $tenantId,
-            referenceType: ReceptacleForInventoryItemsReferenceType::OUTSIDE_OF_SYSTEM,
-            referenceId: 'Outside Of System Catch-All',
-        );
-
         $locationIds = collect([
             'A-01',
             'A-02',
@@ -174,34 +167,34 @@ final class UserAndBasicThingsOnTenantSeeder extends Seeder
 
         $transferPlan = [
             $instances['none'] => [
-                ['from' => $outsideReceptacleId, 'to' => $locationIds->get('A-01'), 'quantity' => 50, 'daysAgo' => 13],
+                ['from' => null, 'to' => $locationIds->get('A-01'), 'quantity' => 50, 'daysAgo' => 13],
                 ['from' => $locationIds->get('A-01'), 'to' => $locationIds->get('A-02'), 'quantity' => 12, 'daysAgo' => 12],
                 ['from' => $locationIds->get('A-02'), 'to' => $locationIds->get('B-01'), 'quantity' => 6, 'daysAgo' => 11],
                 ['from' => $locationIds->get('B-01'), 'to' => $locationIds->get('A-01'), 'quantity' => 4, 'daysAgo' => 10],
             ],
             $instances['lot-a'] => [
-                ['from' => $outsideReceptacleId, 'to' => $locationIds->get('A-01'), 'quantity' => 20, 'daysAgo' => 9],
+                ['from' => null, 'to' => $locationIds->get('A-01'), 'quantity' => 20, 'daysAgo' => 9],
                 ['from' => $locationIds->get('A-01'), 'to' => $locationIds->get('B-01'), 'quantity' => 5, 'daysAgo' => 8],
             ],
             $instances['lot-b'] => [
-                ['from' => $outsideReceptacleId, 'to' => $locationIds->get('A-02'), 'quantity' => 14, 'daysAgo' => 7],
+                ['from' => null, 'to' => $locationIds->get('A-02'), 'quantity' => 14, 'daysAgo' => 7],
                 ['from' => $locationIds->get('A-02'), 'to' => $locationIds->get('A-01'), 'quantity' => 3, 'daysAgo' => 6],
             ],
             $instances['serial-a'] => [
-                ['from' => $outsideReceptacleId, 'to' => $locationIds->get('A-01'), 'quantity' => 1, 'daysAgo' => 5],
+                ['from' => null, 'to' => $locationIds->get('A-01'), 'quantity' => 1, 'daysAgo' => 5],
                 ['from' => $locationIds->get('A-01'), 'to' => $locationIds->get('B-01'), 'quantity' => 1, 'daysAgo' => 4],
                 ['from' => $locationIds->get('B-01'), 'to' => $locationIds->get('A-02'), 'quantity' => 1, 'daysAgo' => 3],
             ],
             $instances['serial-b'] => [
-                ['from' => $outsideReceptacleId, 'to' => $locationIds->get('B-01'), 'quantity' => 1, 'daysAgo' => 5],
+                ['from' => null, 'to' => $locationIds->get('B-01'), 'quantity' => 1, 'daysAgo' => 5],
                 ['from' => $locationIds->get('B-01'), 'to' => $locationIds->get('A-01'), 'quantity' => 1, 'daysAgo' => 4],
             ],
             $instances['lot-serial-a'] => [
-                ['from' => $outsideReceptacleId, 'to' => $locationIds->get('A-02'), 'quantity' => 4, 'daysAgo' => 4],
+                ['from' => null, 'to' => $locationIds->get('A-02'), 'quantity' => 4, 'daysAgo' => 4],
                 ['from' => $locationIds->get('A-02'), 'to' => $locationIds->get('B-01'), 'quantity' => 2, 'daysAgo' => 3],
             ],
             $instances['lot-serial-b'] => [
-                ['from' => $outsideReceptacleId, 'to' => $locationIds->get('A-01'), 'quantity' => 3, 'daysAgo' => 2],
+                ['from' => null, 'to' => $locationIds->get('A-01'), 'quantity' => 3, 'daysAgo' => 2],
                 ['from' => $locationIds->get('A-01'), 'to' => $locationIds->get('A-02'), 'quantity' => 1, 'daysAgo' => 1],
             ],
         ];

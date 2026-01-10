@@ -4,8 +4,10 @@ namespace App\Repositories;
 
 use App\Domain\Inventory\InventoryLevelForReceptacle;
 use App\Domain\Inventory\InventoryLevelsForInventoryInstanceItem;
+use App\Domain\Inventory\InsufficientInventoryInReceptacleException;
 use App\Domain\Inventory\TransferOfInventoryItemsBetweenReceptacles;
 use Carbon\CarbonImmutable;
+use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -17,45 +19,76 @@ class TransferOfInventoryItemsBetweenReceptaclesLedger
     ) {
     }
 
-    public function add(TransferOfInventoryItemsBetweenReceptacles $movement): int
+    public function add(TransferOfInventoryItemsBetweenReceptacles $transfer): int
     {
         $this->inventoryItemAtLowestDistinctLevelRepository->getById(
-            tenantId: $movement->idAndTenant->tenantId,
-            id: $movement->inventoryItemAtLowestDistinctLevelId,
+            tenantId: $transfer->idAndTenant->tenantId,
+            id: $transfer->inventoryItemAtLowestDistinctLevelId,
         );
 
-        $this->receptacleForInventoryItemsRepository->getById(
-            tenantId: $movement->idAndTenant->tenantId,
-            id: $movement->receptacleIdFrom,
-        );
+        if ($transfer->receptacleIdFrom !== null) {
+            $this->receptacleForInventoryItemsRepository->getById(
+                tenantId: $transfer->idAndTenant->tenantId,
+                id: $transfer->receptacleIdFrom,
+            );
+        }
 
-        $this->receptacleForInventoryItemsRepository->getById(
-            tenantId: $movement->idAndTenant->tenantId,
-            id: $movement->receptacleIdTo,
-        );
+        if ($transfer->receptacleIdTo !== null) {
+            $this->receptacleForInventoryItemsRepository->getById(
+                tenantId: $transfer->idAndTenant->tenantId,
+                id: $transfer->receptacleIdTo,
+            );
+        }
 
-        return DB::transaction(function () use ($movement): int {
-            $id = DB::table('transfers_of_inventory_item')->insertGetId(
-                self::mapToPersistence($movement),
+        $allowsNegativeSourceQuantity = $transfer->receptacleIdFrom === null;
+
+        // Treat the transfer ledger as the source-of-truth event stream and the projections as a derived read model.
+        // Persist the event and update projections atomically so the read model never diverges from the event stream.
+        return DB::transaction(function () use ($allowsNegativeSourceQuantity, $transfer): int {
+            if ($transfer->receptacleIdFrom !== null) {
+                $sourceQuantity = DB::table('inventory_level_projections')
+                    ->where('tenant_id', $transfer->idAndTenant->tenantId)
+                    ->where('inventory_item_at_lowest_distinct_level_id', $transfer->inventoryItemAtLowestDistinctLevelId)
+                    ->where('receptacle_for_inventory_item_id', $transfer->receptacleIdFrom)
+                    ->lockForUpdate()
+                    ->value('quantity');
+
+                if (! $allowsNegativeSourceQuantity && ($sourceQuantity ?? 0) - $transfer->quantityAdjustment < 0) {
+                    throw new InsufficientInventoryInReceptacleException(
+                        tenantId: $transfer->idAndTenant->tenantId,
+                        inventoryItemAtLowestDistinctLevelId: $transfer->inventoryItemAtLowestDistinctLevelId,
+                        receptacleId: $transfer->receptacleIdFrom,
+                        currentQuantity: (int) ($sourceQuantity ?? 0),
+                        quantityAdjustment: $transfer->quantityAdjustment,
+                    );
+                }
+            }
+
+            $transferId = DB::table('transfers_of_inventory_item')->insertGetId(
+                self::mapToPersistence($transfer),
             );
 
-            $this->adjustInventoryLevelProjection(
-                tenantId: $movement->idAndTenant->tenantId,
-                inventoryItemAtLowestDistinctLevelId: $movement->inventoryItemAtLowestDistinctLevelId,
-                receptacleId: $movement->receptacleIdFrom,
-                quantityDelta: -$movement->quantityAdjustment,
-                timeUpdated: $movement->timeCreated,
-            );
+            if ($transfer->receptacleIdFrom !== null) {
+                $this->adjustInventoryLevelProjection(
+                    tenantId: $transfer->idAndTenant->tenantId,
+                    inventoryItemAtLowestDistinctLevelId: $transfer->inventoryItemAtLowestDistinctLevelId,
+                    receptacleId: $transfer->receptacleIdFrom,
+                    quantityDelta: -$transfer->quantityAdjustment,
+                    timeUpdated: $transfer->timeCreated,
+                );
+            }
 
-            $this->adjustInventoryLevelProjection(
-                tenantId: $movement->idAndTenant->tenantId,
-                inventoryItemAtLowestDistinctLevelId: $movement->inventoryItemAtLowestDistinctLevelId,
-                receptacleId: $movement->receptacleIdTo,
-                quantityDelta: $movement->quantityAdjustment,
-                timeUpdated: $movement->timeCreated,
-            );
+            if ($transfer->receptacleIdTo !== null) {
+                $this->adjustInventoryLevelProjection(
+                    tenantId: $transfer->idAndTenant->tenantId,
+                    inventoryItemAtLowestDistinctLevelId: $transfer->inventoryItemAtLowestDistinctLevelId,
+                    receptacleId: $transfer->receptacleIdTo,
+                    quantityDelta: $transfer->quantityAdjustment,
+                    timeUpdated: $transfer->timeCreated,
+                );
+            }
 
-            return $id;
+            return $transferId;
         });
     }
 
@@ -122,11 +155,16 @@ class TransferOfInventoryItemsBetweenReceptaclesLedger
         }
 
         $totalsBySkuId = DB::table('inventory_level_projections as projections')
-            ->join('inventory_items_at_lowest_distinct_level as items', function ($join) use ($tenantId): void {
+            ->join('inventory_items_at_lowest_distinct_level as items', function (JoinClause $join) use ($tenantId): void {
                 $join->on('projections.inventory_item_at_lowest_distinct_level_id', '=', 'items.id')
                     ->where('items.tenant_id', $tenantId);
             })
+            ->join('receptacles_for_inventory_items as receptacles', function (JoinClause $join) use ($tenantId): void {
+                $join->on('projections.receptacle_for_inventory_item_id', '=', 'receptacles.id')
+                    ->where('receptacles.tenant_id', $tenantId);
+            })
             ->where('projections.tenant_id', $tenantId)
+            ->where('receptacles.held_inventory_is_available', true)
             ->whereIn('items.inventory_item_at_sku_level_id', $inventoryItemAtSkuLevelIds)
             ->groupBy('items.inventory_item_at_sku_level_id')
             ->select(
@@ -179,11 +217,16 @@ class TransferOfInventoryItemsBetweenReceptaclesLedger
      */
     private function projectLevelsForInventoryItemAtLowestDistinctLevel(int $tenantId, array $inventoryItemAtLowestDistinctLevelIds): Collection
     {
-        $levelsByInstanceId = DB::table('inventory_level_projections')
-            ->where('tenant_id', $tenantId)
-            ->whereIn('inventory_item_at_lowest_distinct_level_id', $inventoryItemAtLowestDistinctLevelIds)
-            ->orderBy('inventory_item_at_lowest_distinct_level_id')
-            ->orderBy('receptacle_for_inventory_item_id')
+        $levelsByInstanceId = DB::table('inventory_level_projections as projections')
+            ->join('receptacles_for_inventory_items as receptacles', function (JoinClause $join) use ($tenantId): void {
+                $join->on('projections.receptacle_for_inventory_item_id', '=', 'receptacles.id')
+                    ->where('receptacles.tenant_id', $tenantId);
+            })
+            ->where('projections.tenant_id', $tenantId)
+            ->where('receptacles.held_inventory_is_available', true)
+            ->whereIn('projections.inventory_item_at_lowest_distinct_level_id', $inventoryItemAtLowestDistinctLevelIds)
+            ->orderBy('projections.inventory_item_at_lowest_distinct_level_id')
+            ->orderBy('projections.receptacle_for_inventory_item_id')
             ->get()
             ->groupBy('inventory_item_at_lowest_distinct_level_id')
             ->map(static function (Collection $rows): Collection {
@@ -220,7 +263,7 @@ class TransferOfInventoryItemsBetweenReceptaclesLedger
     }
 
     /**
-     * @return array<string, int|CarbonImmutable>
+     * @return array<string, int|CarbonImmutable|null>
      */
     private static function mapToPersistence(TransferOfInventoryItemsBetweenReceptacles $movement): array
     {

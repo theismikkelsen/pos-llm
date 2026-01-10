@@ -34,11 +34,10 @@ test('products index shows sku-level stock totals for different tracking modes',
     $inventoryItemAtLowestDistinctLevelRepository = resolve(InventoryItemAtLowestDistinctLevelRepository::class);
     $transferOfInventoryItemsBetweenReceptaclesLedger = resolve(TransferOfInventoryItemsBetweenReceptaclesLedger::class);
 
-    $receivingId = 10;
     $locationId = 11;
 
     BasicTestSetupDataSeeder::forTenant(id: 1)
-        ->seedLocations(ids: [$receivingId, $locationId]);
+        ->seedLocationsWhereHeldInventoryIsAvailable(ids: [$locationId]);
 
     $nonTrackedProductId = $inventoryItemAtSkuLevelRepository->add(
         FactoryForTests::create(InventoryItemAtSkuLevel::class)->withArgs(
@@ -128,7 +127,7 @@ test('products index shows sku-level stock totals for different tracking modes',
             FactoryForTests::create(TransferOfInventoryItemsBetweenReceptacles::class)->withArgs(
                 idAndTenant: new IdAndTenant(id: null, tenantId: 1),
                 inventoryItemAtLowestDistinctLevelId: $instanceId,
-                receptacleIdFrom: $receivingId,
+                receptacleIdFrom: null,
                 receptacleIdTo: $locationId,
                 quantityAdjustment: $quantity,
                 timeCreated: CarbonImmutable::now(),
@@ -151,7 +150,7 @@ test('products index shows sku-level stock totals for different tracking modes',
                 'name' => 'Lot tracked product',
                 'isLotTracked' => true,
                 'isSerialTracked' => false,
-                'stockQuantity' => 0,
+                'stockQuantity' => 6,
             ])
             ->where('items.1', [
                 'id' => $nonTrackedProductId,
@@ -159,7 +158,7 @@ test('products index shows sku-level stock totals for different tracking modes',
                 'name' => 'Non tracked product',
                 'isLotTracked' => false,
                 'isSerialTracked' => false,
-                'stockQuantity' => 0,
+                'stockQuantity' => 5,
             ])
             ->where('items.2', [
                 'id' => $serialTrackedProductId,
@@ -167,7 +166,7 @@ test('products index shows sku-level stock totals for different tracking modes',
                 'name' => 'Serial tracked product',
                 'isLotTracked' => false,
                 'isSerialTracked' => true,
-                'stockQuantity' => 0,
+                'stockQuantity' => 2,
             ])
         );
 });
@@ -200,20 +199,19 @@ test('product page shows sku-level stock by location', function () {
 
     $productId = 1;
     $instanceId = 1;
-    $receivingId = 10;
     $locationOneId = 11;
     $locationTwoId = 12;
 
     BasicTestSetupDataSeeder::forTenant(id: 1)
         ->seedInventoryItemAtSkuLevels(ids: [$productId])
         ->seedInventoryItemAtLowestDistinctLevelWithIdsThatMirrorTheIdOfTheirParentInventoryItemAtSkuLevel(ids: [$instanceId])
-        ->seedLocations(ids: [$receivingId, $locationOneId, $locationTwoId]);
+        ->seedLocations(ids: [$locationOneId, $locationTwoId]);
 
     $transferOfInventoryItemsBetweenReceptaclesLedger->add(
         FactoryForTests::create(TransferOfInventoryItemsBetweenReceptacles::class)->withArgs(
             idAndTenant: new IdAndTenant(id: NULL, tenantId: 1),
             inventoryItemAtLowestDistinctLevelId: $instanceId,
-            receptacleIdFrom: $receivingId,
+            receptacleIdFrom: null,
             receptacleIdTo: $locationOneId,
             quantityAdjustment: 12,
             timeCreated: CarbonImmutable::now(),
@@ -224,7 +222,7 @@ test('product page shows sku-level stock by location', function () {
         FactoryForTests::create(TransferOfInventoryItemsBetweenReceptacles::class)->withArgs(
             idAndTenant: new IdAndTenant(id: NULL, tenantId: 1),
             inventoryItemAtLowestDistinctLevelId: $instanceId,
-            receptacleIdFrom: $receivingId,
+            receptacleIdFrom: null,
             receptacleIdTo: $locationTwoId,
             quantityAdjustment: 5,
             timeCreated: CarbonImmutable::now(),
@@ -257,12 +255,11 @@ test('product page shows lot-level stock by location', function () {
     $productId = 10;
     $lotOneInstanceId = 11;
     $lotTwoInstanceId = 12;
-    $receivingId = 20;
     $locationOneId = 21;
     $locationTwoId = 22;
 
     BasicTestSetupDataSeeder::forTenant(id: 1)
-        ->seedLocations(ids: [$receivingId, $locationOneId, $locationTwoId]);
+        ->seedLocations(ids: [$locationOneId, $locationTwoId]);
 
     $productId = $inventoryItemAtSkuLevelRepository->add(
         FactoryForTests::create(InventoryItemAtSkuLevel::class)->withArgs(
@@ -296,7 +293,7 @@ test('product page shows lot-level stock by location', function () {
         FactoryForTests::create(TransferOfInventoryItemsBetweenReceptacles::class)->withArgs(
             idAndTenant: new IdAndTenant(id: NULL, tenantId: 1),
             inventoryItemAtLowestDistinctLevelId: $lotOneInstanceId,
-            receptacleIdFrom: $receivingId,
+            receptacleIdFrom: null,
             receptacleIdTo: $locationOneId,
             quantityAdjustment: 10,
             timeCreated: CarbonImmutable::now(),
@@ -307,7 +304,7 @@ test('product page shows lot-level stock by location', function () {
         FactoryForTests::create(TransferOfInventoryItemsBetweenReceptacles::class)->withArgs(
             idAndTenant: new IdAndTenant(id: NULL, tenantId: 1),
             inventoryItemAtLowestDistinctLevelId: $lotTwoInstanceId,
-            receptacleIdFrom: $receivingId,
+            receptacleIdFrom: null,
             receptacleIdTo: $locationTwoId,
             quantityAdjustment: 4,
             timeCreated: CarbonImmutable::now(),
@@ -341,12 +338,11 @@ test('product page shows serial-level stock by location', function () {
     $productId = 30;
     $serialOneInstanceId = 31;
     $serialTwoInstanceId = 32;
-    $receivingId = 40;
     $locationOneId = 41;
     $locationTwoId = 42;
 
     BasicTestSetupDataSeeder::forTenant(id: 1)
-        ->seedLocations(ids: [$receivingId, $locationOneId, $locationTwoId]);
+        ->seedLocations(ids: [$locationOneId, $locationTwoId]);
 
     $productId = $inventoryItemAtSkuLevelRepository->add(
         FactoryForTests::create(InventoryItemAtSkuLevel::class)->withArgs(
@@ -380,7 +376,7 @@ test('product page shows serial-level stock by location', function () {
         FactoryForTests::create(TransferOfInventoryItemsBetweenReceptacles::class)->withArgs(
             idAndTenant: new IdAndTenant(id: NULL, tenantId: 1),
             inventoryItemAtLowestDistinctLevelId: $serialOneInstanceId,
-            receptacleIdFrom: $receivingId,
+            receptacleIdFrom: null,
             receptacleIdTo: $locationOneId,
             quantityAdjustment: 1,
             timeCreated: CarbonImmutable::now(),
@@ -391,7 +387,7 @@ test('product page shows serial-level stock by location', function () {
         FactoryForTests::create(TransferOfInventoryItemsBetweenReceptacles::class)->withArgs(
             idAndTenant: new IdAndTenant(id: NULL, tenantId: 1),
             inventoryItemAtLowestDistinctLevelId: $serialTwoInstanceId,
-            receptacleIdFrom: $receivingId,
+            receptacleIdFrom: null,
             receptacleIdTo: $locationTwoId,
             quantityAdjustment: 1,
             timeCreated: CarbonImmutable::now(),

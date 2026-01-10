@@ -42,10 +42,39 @@ class BasicTestSetupDataSeeder
      */
     public function seedLocations(array $ids): self
     {
+        return $this->seedLocationsWithAvailability($ids, true);
+    }
+
+    /**
+     * Seeds Inventory Locations (held inventory available) with specific, hardcoded IDs.
+     *
+     * @param int[] $ids List of specific IDs to assign to the locations.
+     */
+    public function seedLocationsWhereHeldInventoryIsAvailable(array $ids): self
+    {
+        return $this->seedLocationsWithAvailability($ids, true);
+    }
+
+    /**
+     * Seeds Inventory Locations (held inventory not available) with specific, hardcoded IDs.
+     *
+     * @param int[] $ids List of specific IDs to assign to the locations.
+     */
+    public function seedLocationsWhereHeldInventoryIsNotAvailable(array $ids): self
+    {
+        return $this->seedLocationsWithAvailability($ids, false);
+    }
+
+    /**
+     * @param int[] $ids
+     */
+    private function seedLocationsWithAvailability(array $ids, bool $heldInventoryIsAvailable): self
+    {
         foreach ($ids as $id) {
             $this->locationRepository->add(
                 FactoryForTests::create(ReceptacleForInventoryItems::class)->withArgs(
                     idAndTenant: new IdAndTenant(id: $id, tenantId: $this->tenantId),
+                    heldInventoryIsAvailable: $heldInventoryIsAvailable,
                     referenceTypeId: ReceptacleForInventoryItemsReferenceType::WAREHOUSE_LOCATION,
                     referenceId: (string) $id,
                 )
