@@ -1,86 +1,207 @@
 # Guidelines for Testing and Test Cases
 
-- Laravel is the standard framework for all automated testing.
+## Core Information About How The Application Is Tested
 
-## Data Specificity
+- Pest is used for all automated tests.
+- The test suite consists of four types of tests:
+    - Feature tests (`tests/Feature`): These are the primary tests for the application. New features should be covered by a new feature test or by adding assertions to an existing one. Most changes to application functionality (excluding pure refactors) should result in a corresponding update to a feature test.
+    - Integration tests (`tests/Integration`): These verify internal components where multiple parts must interact, such as a Repository or Ledger interacting with the database.
+    - Browser-based smoke tests (`tests/BrowserBasedSmokeTests`): These are the only tests that render the JavaScript application. They are used to verify that every route displaying an Inertia page renders without JavaScript errors. Because these tests are slow, they should be used sparingly.
+    - Unit tests (`tests/Unit`): These are reserved for specific circumstances to test backend class methods in isolation.
 
-- Use `\CodeTooling\FactoryForTests` to generate domain entities. Use default factory data whenever possible; use the `withArgs` method for modifications only when strictly necessary.
-- For feature and browser tests, prefer `\CodeTooling\Testing\BasicTestSetupDataSeeder` to seed standard inventory and locations before layering in scenario-specific data.
-- Define what you assert; default the rest. Any value used in an assertion must be explicitly defined in the setup. Never assert against hidden factory defaults.
-- Reduce Noise. Omit attributes irrelevant to the test scenario. Let the factory handle defaults for non-essential data to keep tests focused.
+## Guidelines For Test Code
 
-## Types of tests
+- Use `\CodeTooling\FactoryForTests` to generate domain entities. Use default factory data whenever possible, and use the withArgs method only when modifications are strictly necessary.
+- In feature and browser tests, prefer `\CodeTooling\Testing\BasicTestSetupDataSeeder` to seed standard inventory and locations before layering in scenario-specific data.
+- Define what you assert and default the rest. Any value used in an assertion must be explicitly defined during setup. Never assert against hidden factory defaults.
+- Reduce noise. Omit attributes that are irrelevant to the test scenario. Let the factory handle defaults for non-essential data to keep tests focused.
+- Execute database setup and assertions through the same classes used by the application (e.g., Repository or Ledger classes) rather than through direct database access. Implement missing methods as needed, following existing architectural patterns.
+- Repositories in this codebase makes it possible to specify IDs for objects being added to database. Hardcoding IDs during test setup is encouraged when it improves readability, even if the application code relies on auto-incrementing values.
+- Use comments to explain non-obvious logic, but omit comments that do not provide information beyond what a cursory look at the code already reveals.
 
-- Feature tests (`tests/Feature`): These cover broader code segments, object interactions, or full HTTP requests.
-- Integration tests (`tests/Integration`): These verify the interaction between different parts of the application or with external services. They ensure that integrated components work together correctly within the Laravel environment.
-- Unit tests (`tests/Unit`): These focus on isolated classes. They do not boot the Laravel application and cannot access the database or framework services.
+## Guidelines For Removing Or Weakening Tests
 
-## Database Interaction in Tests
+- If a test expresses a valid requirement but you cannot make the test pass, do not delete or weaken the test case to bypass the error. Instead, escalate the issue to the human operator by describing the problem and asking for clarification.
 
-- Execute database setup and assertions through the same classes used by the application (e.g., Repository or Ledger classes) rather than direct database access. Implement missing methods as needed, following existing architectural patterns.
-- Hardcoding IDs during test setup is permitted to improve readability, even if the application code relies on auto-incrementing.
+## Guidelines For Specific Types Of Tests
 
-## Testing Tenant Isolation
+### Feature Tests
 
-- Do not include isolation checks in every test. Create dedicated test cases for tenant isolation and place them at the end of the test file.
+- Use feature tests to test the application from the outside and verify that responses and side effects meet expectations.
+- Use Inertia-specific assertions when testing features that return Inertia responses, as these tests do not access the application through a real browser and cannot execute JavaScript.
+- Instead of littering every test case with code for verifying access control logic, create a dedicated test case group (e.g., `describe('access control tests', function () { ... });`) that verifies basic authentication and tenant isolation.
+- Organize each test case with a classic arrange/act/assert structure.
 
-## Modifying Or Removing Assertions Or Testcases In Response To A Test Failing
+### Integration Tests
 
-- Do not modify or remove assertions or test cases due to failure unless the original assumptions no longer reflect how the system should function.
-- Update test cases to align with current behavior when logic changes, and only remove them entirely if the feature being tested is decommissioned.
+- Organize each test case with a classic arrange/act/assert structure.
 
-## Feature tests
+### Browser-Based Smoke Tests
 
-### Guidelines for feature tests
+- Organize each test case with a classic arrange/act/assert structure.
 
-- Use hardcoded string paths instead of the route() helper in test assertions (i.e. `$this->get("/authors/$authorId")`).
-- Use `BasicTestSetupDataSeeder` to establish base data before adding test-specific entities.
+### Unit Tests
 
-### Idiomatic, Generic Example Of How A Feature Test Should Be Organized
+- Organize each test case in the manner that best fits the individual case. Use the arrange/act/assert structure only when it is the most logical choice.
 
-```PHP
+## Example Showcasing Ideal Form For Feature Tests (Based On The Fictitious Medical Practice Management Software Domain)
+
+```php
 <?php
 
+use App\Domain\PatientGroup;
+use App\Domain\PatientRecord;
+use App\Enums\Gender;
 use App\Models\User;
-use App\Repositories\PatientProfileRepository;
+use App\Repositories\PatientGroupRepository;
+use App\Repositories\PatientRecordRepository;
+use CodeTooling\Testing\BasicTestSetupDataSeeder;
 use CodeTooling\Testing\FactoryForTests;
-use App\Domain\PatientProfile;
+use Inertia\Testing\AssertableInertia;
 
 beforeEach(function () {
-    $this->patientProfileRepository = resolve(PatientProfileRepository::class);
-});
-
-test('authenticated users can visit the page with list of patients', function () {
-    // Arrange
-    $this->actingAs(User::factory()->create());
-    
-    $this->patientProfileRepository->add(FactoryForTests::create(PatientProfile::class)->withArgs(id: 1, fullName: 'Name of Patient A'));
-    $this->patientProfileRepository->add(FactoryForTests::create(PatientProfile::class)->withArgs(id: 2, fullName: 'Name of Patient B'));
-
-    // Act
-    $response = $this->get("/patients");
-    
-    // Assert
-    $response
-        ->assertOk()
-        ->assertSee('Name of Patient A')
-        ->assertSee('Name of Patient B');
+    $this->patientRecordRepository = resolve(PatientRecordRepository::class);
+    $this->patientGroupRepository = resolve(PatientGroupRepository::class);
 });
 
 test('authenticated users can visit an individual patient\'s page', function () {
-    // Arrange
-    $this->actingAs(User::factory()->create());
+    // ARRANGE
+    $this->actingAs(BasicTestSetupDataSeeder::forTenant(id: 1)->seedUser(id: 1));
 
-    $patientId = $this->patientProfileRepository->add(
-        FactoryForTests::create(PatientProfile::class)->withArgs(id: 1, fullName: 'Name of Patient A')
+    $this->patientGroupRepository->add(
+        FactoryForTests::create(PatientGroup::class)->withArgs(
+            id: 10, 
+            title: 'Patient Group 10', 
+        )
+    );
+    
+    $this->patientRecordRepository->add(
+        FactoryForTests::create(PatientRecord::class)->withArgs(
+            id: $patientId = 1, 
+            patientGroupId: 10, 
+            fullName: 'Full Name Of Patient 1',
+            gender: Gender::MALE,
+            isUninsured: false,
+        )
     );
 
-    // Act
+    // ACT
     $response = $this->get("/patients/$patientId");
-    
-    // Assert
+
+    // ASSERT
+    $response->assertStatus(200);
+
     $response
-        ->assertOk()
-        ->assertSee('Name of Patient A');
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('patients/show')
+            ->where('patient', [
+                'id' => $patientId,
+                'fullName' => 'Full Name Of Patient 1',
+                'gender' => 'male',
+                'isUninsured' => false,
+                'patientGroup' => [
+                    'id' => 10, 
+                    'title' => 'Patient Group 10', 
+                ],
+            ])
+        );
+});
+
+test('authenticated users can flag an individual patient as uninsured', function () {
+    // ARRANGE
+    $this->actingAs(BasicTestSetupDataSeeder::forTenant(id: 1)->seedUser(id: 1));
+    
+    $this->patientRecordRepository->add(
+        FactoryForTests::create(PatientRecord::class)->withArgs(
+            id: $patientId = 1, 
+            isUninsured: false,
+        )
+    );
+
+    // ACT
+    $response = $this
+    	->from("/patients/$patientId")
+    	->post("/patients/$patientId/flag-as-uninsured");
+
+    // ASSERT
+    $response->assertRedirect("/patients/$patientId");
+    
+    $updatedPatient = $this->patientRecordRepository->get($patientId);
+    expect($updatedPatient->isUninsured)->toBeTrue();
+});
+
+test('authenticated users can soft-delete an individual patient', function () {
+    // ARRANGE
+    $this->actingAs(BasicTestSetupDataSeeder::forTenant(id: 1)->seedUser(id: 1));
+
+    $this->patientRecordRepository->add(
+        FactoryForTests::create(PatientRecord::class)->withArgs(
+            id: $patientId = 1,
+            timeDeletedAt: null,
+        )
+    );
+
+    // ACT
+    $response = $this->post("/patients/$patientId/delete");
+
+    // ASSERT
+    $response->assertRedirect('/patients');
+    $response->assertSessionHas('success', 'Patient was deleted');
+    
+    $patient = $this->patientRecordRepository->get($patientId);
+    expect($patient->timeDeletedAt)->not->toBeNull();
+});
+
+test('authenticated users can not visit an individual patient\'s page for a soft-deleted patient', function () {
+    // ARRANGE
+    $this->actingAs(BasicTestSetupDataSeeder::forTenant(id: 1)->seedUser(id: 1));
+    
+    $this->patientRecordRepository->add(
+        FactoryForTests::create(PatientRecord::class)->withArgs(
+            id: $patientId = 1, 
+            timeDeletedAt: now(),
+        )
+    );
+
+    // ACT
+    $response = $this->get("/patients/$patientId");
+
+    // ASSERT
+    $response->assertStatus(404);
+});
+
+describe('access control tests', function () {
+    test('unauthenticated users are not allowed access to an individual patient\'s page', function () {
+        // ARRANGE
+        $this->patientRecordRepository->add(
+            FactoryForTests::create(PatientRecord::class)->withArgs(
+                id: $patientId = 1, 
+            )
+        );
+
+        // ACT
+        $response = $this->get("/patients/$patientId");
+
+        // ASSERT
+        $response->assertStatus(401);
+    });
+
+    test('authenticated users are not allowed cross-tenant access to individual patient\'s page', function () {
+    	// ARRANGE
+    	$this->actingAs(BasicTestSetupDataSeeder::forTenant(id: 1)->seedUser(id: 1));
+        
+        $this->patientRecordRepository->add(
+            FactoryForTests::create(PatientRecord::class)->withArgs(
+                id: $patientId = 1, 
+                idOfTenant: 2, 
+            )
+        );
+
+        // ACT
+        $response = $this->get("/patients/$patientId");
+
+        // ASSERT
+        $response->assertStatus(404); // 404 used to avoid leaking the existence of the resource
+    });
 });
 ```

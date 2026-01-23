@@ -7,6 +7,7 @@ use App\Domain\Inventory\InventoryItemAtSkuLevel;
 use App\Domain\Inventory\InventoryItemAtLowestDistinctLevel;
 use App\Domain\Inventory\ReceptacleForInventoryItems;
 use App\Domain\Inventory\ReceptacleForInventoryItemsReferenceType;
+use App\Models\User;
 use App\Repositories\InventoryItemAtSkuLevelRepository;
 use App\Repositories\InventoryItemAtLowestDistinctLevelRepository;
 use App\Repositories\ReceptacleForInventoryItemsRepository;
@@ -33,6 +34,13 @@ class BasicTestSetupDataSeeder
     public static function forTenant(int $id): self
     {
         return new self($id);
+    }
+
+    public function seedUser(int $id): self
+    {
+        User::factory()->create(['id' => 1]);
+
+        return $this;
     }
 
     /**

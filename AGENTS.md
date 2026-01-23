@@ -14,8 +14,7 @@
 - `agent_docs/guidelines-for-database-migrations.md`
 - `agent_docs/guidelines-for-shadcn-components.md`
 - `agent_docs/guidelines-for-routes-and-controller-classes.md`
-- `agent_docs/guidelines-for-planning-workflow.md`
-- `agent_docs/guidelines-for-feature-specification-document-workflow.md`
+- `agent_docs/guidelines-for-workflow-make-feature-change-specification-document.md`
 
 ## About `AGENTS.md` and `agent_docs/*`
 
